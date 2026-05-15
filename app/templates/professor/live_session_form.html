@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% block title %}إضافة جلسة مباشرة - {{ course.title_ar }}{% endblock %}
+
+{% block extra_css %}
+<style>
+:root { --navy: #1B2A52; --navy-light: #2d4080; --gold: #F0B429; --border: #e5e7eb; --radius: 12px; --radius-sm: 8px; }
+.form-page { padding: 0 0 3rem; }
+.page-header { background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%); padding: 2rem; margin-bottom: 2rem; }
+.page-header__inner { max-width: 800px; margin: 0 auto; }
+.page-header__title { color: #fff; font-size: 1.6rem; font-weight: 700; margin: 0; }
+.form-container { max-width: 800px; margin: 0 auto; padding: 0 1rem; }
+.form-card { background: #fff; border-radius: var(--radius); border: 1px solid var(--border); padding: 2rem; box-shadow: 0 2px 16px rgba(27,42,82,.1); }
+.field-group { margin-bottom: 1.25rem; }
+.field-label { display: block; font-size: .82rem; font-weight: 600; color: #1a1a2e; margin-bottom: .4rem; }
+.field-input, .field-select { width: 100%; padding: .65rem .9rem; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-size: .9rem; }
+.field-input:focus, .field-select:focus { outline: none; border-color: var(--navy); box-shadow: 0 0 0 3px rgba(27,42,82,.1); }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.btn-submit { width: 100%; padding: .8rem; background: var(--navy); color: #fff; border: none; border-radius: var(--radius-sm); font-size: 1rem; font-weight: 700; cursor: pointer; transition: background .2s; }
+.btn-submit:hover { background: var(--navy-light); }
+.btn-cancel { display: block; text-align: center; margin-top: 1rem; color: var(--text-muted); text-decoration: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-page">
+  <div class="page-header">
+    <div class="page-header__inner">
+      <h1 class="page-header__title">➕ إضافة جلسة مباشرة</h1>
+      <p style="color: rgba(255,255,255,.7); margin: .3rem 0 0;">{{ course.title_ar }}</p>
+    </div>
+  </div>
+
+  <div class="form-container">
+    <div class="form-card">
+      <form method="POST">
+        {{ form.hidden_tag() }}
+
+        <div class="field-group">
+          <label class="field-label">{{ form.title.label }}</label>
+          {{ form.title(class="field-input", placeholder="مثال: مراجعة عامة - الوحدة الأولى") }}
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">{{ form.description.label }}</label>
+          {{ form.description(class="field-input", rows="3", style="resize:vertical;") }}
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">{{ form.platform.label }}</label>
+          {{ form.platform(class="field-select") }}
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">{{ form.meeting_url.label }}</label>
+          {{ form.meeting_url(class="field-input", placeholder="https://zoom.us/j/...") }}
+        </div>
+
+        <div class="form-row">
+          <div class="field-group">
+            <label class="field-label">{{ form.meeting_id.label }}</label>
+            {{ form.meeting_id(class="field-input", placeholder="معرف الاجتماع") }}
+          </div>
+          <div class="field-group">
+            <label class="field-label">{{ form.password.label }}</label>
+            {{ form.password(class="field-input", placeholder="كلمة المرور (اختياري)") }}
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="field-group">
+            <label class="field-label">{{ form.scheduled_at.label }}</label>
+            {{ form.scheduled_at(class="field-input", type="datetime-local") }}
+          </div>
+          <div class="field-group">
+            <label class="field-label">{{ form.duration_min.label }}</label>
+            {{ form.duration_min(class="field-input", type="number", min="15", max="240") }}
+          </div>
+        </div>
+
+        {{ form.submit(class="btn-submit", value="🎥 إضافة الجلسة") }}
+        <a href="{{ url_for('professor.list_live_sessions', course_id=course.id) }}" class="btn-cancel">← إلغاء</a>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

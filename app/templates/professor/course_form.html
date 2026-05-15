@@ -1,0 +1,397 @@
+{% extends 'base.html' %}
+{% block title %}{% if mode == 'create' %}إنشاء تكوين جديد{% else %}تعديل التكوين{% endif %} — PSFSLA{% endblock %}
+
+{% block content %}
+<div class="form-page" dir="rtl">
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="page-header__inner">
+      <div class="page-header__breadcrumb">
+        <a href="{{ url_for('professor.dashboard') }}">لوحة القيادة</a>
+        <span class="sep">›</span>
+        <a href="{{ url_for('professor.my_courses') }}">تكويناتي</a>
+        <span class="sep">›</span>
+        <span>{% if mode == 'create' %}تكوين جديد{% else %}تعديل{% endif %}</span>
+      </div>
+      <h1 class="page-header__title">
+        {% if mode == 'create' %}
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 16 16"><path d="M8 1a.5.5 0 0 1 .5.5v6h6a.5.5 0 0 1 0 1h-6v6a.5.5 0 0 1-1 0v-6h-6a.5.5 0 0 1 0-1h6v-6A.5.5 0 0 1 8 1z"/></svg>
+          إنشاء تكوين جديد
+        {% else %}
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 16 16"><path d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.499.499 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11z"/></svg>
+          تعديل: {{ course.title_ar }}
+        {% endif %}
+      </h1>
+    </div>
+  </div>
+
+  <!-- Form Container -->
+  <div class="form-container">
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert--{{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST" enctype="multipart/form-data" novalidate>
+      {{ form.hidden_tag() }}
+
+      <div class="form-grid">
+
+        <!-- LEFT: Main Fields -->
+        <div class="form-main">
+
+          <!-- Section: عناوين -->
+          <div class="form-section">
+            <h2 class="form-section__title">
+              <span class="form-section__num">١</span>
+              معلومات التكوين
+            </h2>
+
+            <div class="field-group">
+              {{ form.title_ar.label(class="field-label") }}
+              {{ form.title_ar(class="field-input" + (' field-input--error' if form.title_ar.errors else '')) }}
+              {% for error in form.title_ar.errors %}
+                <span class="field-error">{{ error }}</span>
+              {% endfor %}
+            </div>
+
+            <div class="field-group">
+              {{ form.title_fr.label(class="field-label") }}
+              {{ form.title_fr(class="field-input", dir="ltr") }}
+              {% for error in form.title_fr.errors %}
+                <span class="field-error">{{ error }}</span>
+              {% endfor %}
+            </div>
+
+            <div class="field-group">
+              {{ form.description.label(class="field-label") }}
+              {{ form.description(class="field-input field-input--textarea") }}
+              {% for error in form.description.errors %}
+                <span class="field-error">{{ error }}</span>
+              {% endfor %}
+            </div>
+          </div><!-- /section -->
+
+          <!-- Section: تفاصيل -->
+          <div class="form-section">
+            <h2 class="form-section__title">
+              <span class="form-section__num">٢</span>
+              تفاصيل إضافية
+            </h2>
+
+            <div class="form-row">
+              <div class="field-group">
+                {{ form.level.label(class="field-label") }}
+                {{ form.level(class="field-select") }}
+                {% for error in form.level.errors %}
+                  <span class="field-error">{{ error }}</span>
+                {% endfor %}
+              </div>
+
+              <div class="field-group">
+                {{ form.duration_hours.label(class="field-label") }}
+                {{ form.duration_hours(class="field-input") }}
+                {% for error in form.duration_hours.errors %}
+                  <span class="field-error">{{ error }}</span>
+                {% endfor %}
+              </div>
+
+              <div class="field-group">
+                {{ form.category_id.label(class="field-label") }}
+                {{ form.category_id(class="field-select") }}
+                {% for error in form.category_id.errors %}
+                  <span class="field-error">{{ error }}</span>
+                {% endfor %}
+              </div>
+            </div>
+
+          </div><!-- /section -->
+
+        </div><!-- /form-main -->
+
+        <!-- RIGHT: Sidebar -->
+        <div class="form-sidebar">
+
+          <!-- Publish Card -->
+          <div class="sidebar-card">
+            <h3 class="sidebar-card__title">النشر</h3>
+
+            <div class="publish-toggle">
+              <label class="toggle-label" for="{{ form.is_published.id }}">
+                <div class="toggle-switch">
+                  {{ form.is_published(class="toggle-input", id=form.is_published.id) }}
+                  <span class="toggle-slider"></span>
+                </div>
+                <div class="toggle-text">
+                  <span class="toggle-text__main">نشر التكوين</span>
+                  <span class="toggle-text__sub">سيكون مرئياً للطلاب</span>
+                </div>
+              </label>
+            </div>
+
+            <div class="sidebar-actions">
+              {{ form.submit(class="btn-submit") }}
+              <a href="{{ url_for('professor.my_courses') }}" class="btn-cancel">إلغاء</a>
+            </div>
+          </div>
+
+          <!-- Thumbnail Card -->
+          <div class="sidebar-card">
+            <h3 class="sidebar-card__title">صورة التكوين</h3>
+
+            {% if mode == 'edit' and course.thumbnail and course.thumbnail != 'course_default.png' %}
+            <div class="thumb-preview">
+              <img src="{{ url_for('static', filename='images/uploads/' ~ course.thumbnail) }}"
+                   alt="الصورة الحالية" id="thumb-preview-img">
+            </div>
+            {% else %}
+            <div class="thumb-preview thumb-preview--empty" id="thumb-preview-wrapper">
+              <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="currentColor" viewBox="0 0 16 16" opacity=".3"><path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0"/><path d="M1.5 2A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2zm13 1a.5.5 0 0 1 .5.5v6l-3.775-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12v.54L1 12.5v-9a.5.5 0 0 1 .5-.5z"/></svg>
+              <span>لا توجد صورة</span>
+            </div>
+            {% endif %}
+
+            <label class="upload-btn">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/><path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 0-.708-.708z"/></svg>
+              رفع صورة
+              {{ form.thumbnail(id="thumb-file-input", accept="image/*") }}
+            </label>
+            <p class="upload-hint">JPG, PNG, WebP — بحد أقصى 2MB</p>
+          </div>
+
+          <!-- Tips Card -->
+          <div class="sidebar-card sidebar-card--tip">
+            <h3 class="sidebar-card__title">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2"/></svg>
+              نصائح
+            </h3>
+            <ul class="tip-list">
+              <li>استخدم عنواناً واضحاً وجذاباً</li>
+              <li>اكتب وصفاً تفصيلياً يشرح محتوى التكوين</li>
+              <li>اختر المستوى المناسب لجمهورك المستهدف</li>
+              <li>أضف صورة جذابة لزيادة التسجيلات</li>
+            </ul>
+          </div>
+
+        </div><!-- /form-sidebar -->
+
+      </div><!-- /form-grid -->
+    </form>
+  </div><!-- /form-container -->
+
+</div>
+
+<script>
+// Live thumbnail preview
+const fileInput = document.getElementById('thumb-file-input');
+fileInput && fileInput.addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    let img = document.getElementById('thumb-preview-img');
+    const wrapper = document.getElementById('thumb-preview-wrapper');
+    if (!img) {
+      img = document.createElement('img');
+      img.id = 'thumb-preview-img';
+      img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:8px;';
+      if (wrapper) { wrapper.innerHTML = ''; wrapper.appendChild(img); }
+    }
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+});
+</script>
+
+<style>
+:root {
+  --navy: #1B2A52; --navy-dark: #111d3a; --navy-light: #2d4080;
+  --gold: #F0B429; --gold-dark: #c8941f;
+  --text: #1a1a2e; --text-muted: #6b7280;
+  --border: #e5e7eb; --bg-soft: #f8f9fc;
+  --radius: 12px; --radius-sm: 8px;
+  --shadow: 0 2px 16px rgba(27,42,82,.10);
+}
+
+.form-page { padding: 0 0 3rem; }
+
+/* ─── Header ──────────────── */
+.page-header {
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+  padding: 1.75rem 2rem;
+  margin-bottom: 2rem;
+}
+.page-header__inner { max-width: 1100px; margin: 0 auto; }
+.page-header__breadcrumb {
+  font-size: .78rem; color: rgba(255,255,255,.55);
+  display: flex; align-items: center; gap: .35rem; margin-bottom: .5rem;
+}
+.page-header__breadcrumb a { color: rgba(255,255,255,.55); text-decoration: none; }
+.page-header__breadcrumb a:hover { color: var(--gold-light, #fcd160); }
+.page-header__breadcrumb .sep { opacity: .4; }
+.page-header__title {
+  color: #fff; font-size: 1.5rem; font-weight: 700; margin: 0;
+  display: flex; align-items: center; gap: .55rem;
+}
+
+/* ─── Container ──────────── */
+.form-container { max-width: 1100px; margin: 0 auto; padding: 0 1rem; }
+
+.alert {
+  padding: .75rem 1.25rem; border-radius: var(--radius-sm);
+  font-size: .88rem; font-weight: 600; margin-bottom: 1rem;
+}
+.alert--success { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+.alert--danger  { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+
+/* ─── Grid ───────────────── */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 1.5rem;
+  align-items: start;
+}
+@media (max-width: 850px) { .form-grid { grid-template-columns: 1fr; } }
+
+/* ─── Sections ───────────── */
+.form-section {
+  background: #fff; border-radius: var(--radius);
+  border: 1px solid var(--border); padding: 1.75rem;
+  box-shadow: var(--shadow); margin-bottom: 1.25rem;
+}
+.form-section__title {
+  font-size: 1rem; font-weight: 700; color: var(--navy);
+  margin: 0 0 1.25rem;
+  display: flex; align-items: center; gap: .6rem;
+  padding-bottom: .75rem; border-bottom: 2px solid var(--bg-soft);
+}
+.form-section__num {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 26px; height: 26px; background: var(--gold);
+  color: var(--navy-dark); border-radius: 50%;
+  font-size: .75rem; font-weight: 800;
+}
+
+/* ─── Fields ─────────────── */
+.field-group { margin-bottom: 1.1rem; }
+.field-label {
+  display: block; font-size: .82rem; font-weight: 600;
+  color: var(--text); margin-bottom: .4rem;
+}
+.field-input, .field-select {
+  width: 100%; padding: .65rem .9rem;
+  border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+  font-size: .9rem; color: var(--text); background: #fff;
+  transition: border-color .2s, box-shadow .2s;
+  font-family: inherit;
+}
+.field-input:focus, .field-select:focus {
+  outline: none;
+  border-color: var(--navy);
+  box-shadow: 0 0 0 3px rgba(27,42,82,.1);
+}
+.field-input--error { border-color: #dc2626; }
+.field-input--textarea { resize: vertical; min-height: 120px; }
+.field-select { appearance: none; cursor: pointer; }
+.field-error { display: block; font-size: .75rem; color: #dc2626; margin-top: .3rem; }
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
+/* ─── Sidebar Cards ──────── */
+.form-sidebar { display: flex; flex-direction: column; gap: 1.25rem; }
+.sidebar-card {
+  background: #fff; border-radius: var(--radius);
+  border: 1px solid var(--border); padding: 1.25rem;
+  box-shadow: var(--shadow);
+}
+.sidebar-card--tip { background: #fffbeb; border-color: #fde68a; }
+.sidebar-card__title {
+  font-size: .85rem; font-weight: 700; color: var(--navy);
+  margin: 0 0 1rem;
+  display: flex; align-items: center; gap: .4rem;
+  padding-bottom: .6rem; border-bottom: 1px solid var(--border);
+}
+.sidebar-card--tip .sidebar-card__title { border-color: #fde68a; }
+
+/* ─── Publish Toggle ─────── */
+.publish-toggle { margin-bottom: 1.25rem; }
+.toggle-label { display: flex; align-items: center; gap: .75rem; cursor: pointer; }
+.toggle-switch { position: relative; flex-shrink: 0; }
+.toggle-input { opacity: 0; width: 0; height: 0; position: absolute; }
+.toggle-slider {
+  display: block; width: 44px; height: 24px;
+  background: #d1d5db; border-radius: 12px;
+  transition: background .2s;
+  position: relative;
+}
+.toggle-slider::after {
+  content: '';
+  position: absolute; top: 3px; right: 3px;
+  width: 18px; height: 18px;
+  background: #fff; border-radius: 50%;
+  transition: transform .2s;
+  box-shadow: 0 1px 4px rgba(0,0,0,.2);
+}
+.toggle-input:checked + .toggle-slider { background: var(--navy); }
+.toggle-input:checked + .toggle-slider::after { transform: translateX(-20px); }
+.toggle-text__main { display: block; font-size: .85rem; font-weight: 600; color: var(--text); }
+.toggle-text__sub  { display: block; font-size: .72rem; color: var(--text-muted); }
+
+/* ─── Action Buttons ─────── */
+.sidebar-actions { display: flex; flex-direction: column; gap: .6rem; }
+.btn-submit {
+  width: 100%; padding: .75rem;
+  background: var(--navy); color: #fff;
+  border: none; border-radius: var(--radius-sm);
+  font-size: .9rem; font-weight: 700;
+  cursor: pointer; transition: background .2s;
+}
+.btn-submit:hover { background: var(--navy-light, #2d4080); }
+.btn-cancel {
+  display: block; text-align: center;
+  padding: .6rem; background: var(--bg-soft);
+  color: var(--text-muted); border-radius: var(--radius-sm);
+  text-decoration: none; font-size: .85rem; font-weight: 600;
+  border: 1px solid var(--border); transition: background .15s;
+}
+.btn-cancel:hover { background: #f3f4f6; color: var(--text); }
+
+/* ─── Thumbnail ──────────── */
+.thumb-preview {
+  width: 100%; height: 130px; border-radius: var(--radius-sm);
+  overflow: hidden; margin-bottom: .75rem;
+  background: var(--bg-soft); border: 1px solid var(--border);
+}
+.thumb-preview img { width: 100%; height: 100%; object-fit: cover; }
+.thumb-preview--empty {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: .4rem; color: var(--text-muted); font-size: .78rem;
+}
+.upload-btn {
+  display: flex; align-items: center; justify-content: center; gap: .4rem;
+  padding: .55rem; border-radius: var(--radius-sm);
+  border: 1.5px dashed var(--border); cursor: pointer;
+  font-size: .82rem; font-weight: 600; color: var(--navy);
+  transition: border-color .15s, background .15s;
+  width: 100%; text-align: center;
+}
+.upload-btn:hover { border-color: var(--navy); background: var(--bg-soft); }
+.upload-btn input[type="file"] { display: none; }
+.upload-hint { font-size: .7rem; color: var(--text-muted); margin: .4rem 0 0; text-align: center; }
+
+/* ─── Tips ───────────────── */
+.tip-list { margin: 0; padding-right: 1.2rem; }
+.tip-list li { font-size: .78rem; color: #92400e; margin-bottom: .4rem; line-height: 1.5; }
+</style>
+{% endblock %}

@@ -1,0 +1,275 @@
+{% extends 'base.html' %}
+{% block title %}إدارة الموارد - {{ course.title_ar }}{% endblock %}
+
+{% block extra_css %}
+<style>
+:root {
+  --navy: #1B2A52;
+  --navy-dark: #111d3a;
+  --navy-light: #2d4080;
+  --gold: #F0B429;
+  --gold-dark: #c8941f;
+  --text: #1a1a2e;
+  --text-muted: #6b7280;
+  --border: #e5e7eb;
+  --bg-soft: #f8f9fc;
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+
+.resources-page { padding: 0 0 3rem; }
+
+.page-header {
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+.page-header__inner {
+  max-width: 1200px; margin: 0 auto;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.page-header__title { color: #fff; font-size: 1.6rem; font-weight: 700; margin: 0; }
+.page-header__sub { color: rgba(255,255,255,.65); font-size: .88rem; margin: .2rem 0 0; }
+.page-header__back {
+  color: var(--gold); text-decoration: none;
+  display: flex; align-items: center; gap: .4rem;
+  font-size: .88rem;
+}
+
+.back-link { color: var(--gold); text-decoration: none; }
+.back-link:hover { color: var(--gold-dark); }
+
+.content-grid {
+  max-width: 1200px; margin: 0 auto; padding: 0 1rem;
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 1.5rem;
+}
+@media (max-width: 900px) { .content-grid { grid-template-columns: 1fr; } }
+
+/* Resources List */
+.resources-list {
+  background: #fff;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: 0 2px 16px rgba(27,42,82,.08);
+  overflow: hidden;
+}
+.resource-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+  transition: background .15s;
+}
+.resource-item:last-child { border-bottom: none; }
+.resource-item:hover { background: var(--bg-soft); }
+.resource-icon {
+  width: 48px; height: 48px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+.resource-info { flex: 1; min-width: 0; }
+.resource-title { font-weight: 700; font-size: .95rem; color: var(--text); margin-bottom: .2rem; }
+.resource-meta { font-size: .72rem; color: var(--text-muted); display: flex; gap: 1rem; }
+.resource-actions { display: flex; gap: .5rem; flex-shrink: 0; }
+.resource-badge {
+  display: inline-block; padding: .15rem .6rem;
+  border-radius: 20px; font-size: .7rem; font-weight: 600;
+}
+.badge-pdf { background: #fee2e2; color: #dc2626; }
+.badge-video { background: #dcfce7; color: #16a34a; }
+.badge-link { background: #dbeafe; color: #2563eb; }
+
+.empty-resources {
+  text-align: center; padding: 3rem;
+  color: var(--text-muted);
+}
+
+/* Sidebar Form */
+.form-card {
+  background: #fff;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  padding: 1.25rem;
+  position: sticky;
+  top: 20px;
+}
+.form-card__title {
+  font-size: 1rem; font-weight: 700; color: var(--navy);
+  margin: 0 0 1rem;
+  padding-bottom: .75rem;
+  border-bottom: 2px solid var(--bg-soft);
+}
+.field-group { margin-bottom: 1rem; }
+.field-label {
+  display: block; font-size: .8rem; font-weight: 600;
+  color: var(--text); margin-bottom: .35rem;
+}
+.field-input, .field-select {
+  width: 100%; padding: .6rem .8rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: .88rem;
+  transition: border-color .2s;
+}
+.field-input:focus, .field-select:focus {
+  outline: none;
+  border-color: var(--navy);
+  box-shadow: 0 0 0 3px rgba(27,42,82,.1);
+}
+.field-input--textarea { resize: vertical; min-height: 80px; }
+.btn-submit {
+  width: 100%; padding: .7rem;
+  background: var(--navy); color: #fff;
+  border: none; border-radius: var(--radius-sm);
+  font-size: .9rem; font-weight: 700;
+  cursor: pointer; transition: background .2s;
+}
+.btn-submit:hover { background: var(--navy-light); }
+
+.delete-form { display: inline; }
+.delete-btn {
+  background: none; border: none;
+  color: #dc2626; cursor: pointer;
+  padding: .3rem; border-radius: 6px;
+  transition: background .15s;
+}
+.delete-btn:hover { background: #fee2e2; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="resources-page">
+  
+  <!-- Header -->
+  <div class="page-header">
+    <div class="page-header__inner">
+      <div>
+        <h1 class="page-header__title">📁 إدارة الموارد</h1>
+        <p class="page-header__sub">{{ course.title_ar }}</p>
+      </div>
+      <a href="{{ url_for('professor.my_courses') }}" class="page-header__back">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a.5.5 0 0 1 .5.5v6h6a.5.5 0 0 1 0 1h-6v6a.5.5 0 0 1-1 0v-6h-6a.5.5 0 0 1 0-1h6v-6A.5.5 0 0 1 8 1z"/></svg>
+        العودة للتكوينات
+      </a>
+    </div>
+  </div>
+
+  <div class="content-grid">
+    
+    <!-- Left: Resources List -->
+    <div class="resources-list">
+      <div style="padding: 1rem 1.25rem; background: var(--bg-soft); border-bottom: 1px solid var(--border);">
+        <strong>الموارد ({{ resources|length }})</strong>
+      </div>
+      
+      {% if resources %}
+        {% for r in resources %}
+        <div class="resource-item">
+          <div class="resource-icon" style="background: 
+            {% if r.type == 'pdf' %}#fee2e2{% elif r.type == 'video' %}#dcfce7{% else %}#dbeafe{% endif %}">
+            <i class="bi bi-{% if r.type == 'pdf' %}file-pdf-fill text-danger{% elif r.type == 'video' %}camera-video-fill text-success{% else %}link-45deg text-primary{% endif %}"></i>
+          </div>
+          <div class="resource-info">
+            <div class="resource-title">{{ r.title }}</div>
+            <div class="resource-meta">
+              <span class="resource-badge badge-{{ r.type }}">{% if r.type == 'pdf' %}PDF{% elif r.type == 'video' %}فيديو{% else %}رابط{% endif %}</span>
+              <span>الترتيب: {{ r.order or 0 }}</span>
+              {% if r.is_public %}<span>🔓 عام</span>{% else %}<span>🔒 للطلاب فقط</span>{% endif %}
+            </div>
+          </div>
+          <div class="resource-actions">
+            <form method="POST" action="{{ url_for('professor.delete_resource', resource_id=r.id) }}" class="delete-form" onsubmit="return confirm('هل أنت متأكد من حذف هذا المورد؟')">
+              <button type="submit" class="delete-btn" title="حذف">
+                <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor"><path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1z"/></svg>
+              </button>
+            </form>
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="empty-resources">
+          <svg width="48" height="48" viewBox="0 0 16 16" fill="currentColor" opacity=".2"><path d="M1 2.828c.885-.37 2.154-.769 3.388-.893 1.33-.134 2.458.063 3.112.752v9.746c-.935-.53-2.12-.603-3.213-.493-1.18.12-2.37.461-3.287.811z"/></svg>
+          <p>لا توجد موارد بعد</p>
+          <small>أضف أول مورد باستخدام النموذج الجانبي</small>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Right: Add Resource Form -->
+    <div class="form-card">
+      <h3 class="form-card__title">➕ إضافة مورد جديد</h3>
+      
+      <form method="POST" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+        
+        <div class="field-group">
+          <label class="field-label">{{ form.title.label }}</label>
+          {{ form.title(class="field-input", placeholder="مثال: محاضرة 1 - مقدمة في علم المكتبات") }}
+        </div>
+        
+        <div class="field-group">
+          <label class="field-label">{{ form.type.label }}</label>
+          {{ form.type(class="field-select", id="resource_type") }}
+        </div>
+        
+        <div class="field-group" id="file_field">
+          <label class="field-label">{{ form.file.label }}</label>
+          {{ form.file(class="field-input", accept=".pdf,.mp4,.jpg,.png") }}
+        </div>
+        
+        <div class="field-group" id="url_field" style="display:none;">
+          <label class="field-label">{{ form.url.label }}</label>
+          {{ form.url(class="field-input", placeholder="https://youtube.com/watch?v=...") }}
+        </div>
+        
+        <div class="field-group">
+          <label class="field-label">{{ form.description.label }}</label>
+          {{ form.description(class="field-input field-input--textarea", rows="3") }}
+        </div>
+        
+        <div class="field-group">
+          <label class="field-label">{{ form.order.label }}</label>
+          {{ form.order(class="field-input", type="number", min="0") }}
+        </div>
+        
+        <div class="field-group">
+          <label class="field-label">
+            {{ form.is_public() }} {{ form.is_public.label }}
+          </label>
+        </div>
+        
+        {{ form.submit(class="btn-submit", value="+ إضافة المورد") }}
+      </form>
+    </div>
+    
+  </div>
+</div>
+
+<script>
+// Show/hide file/url fields based on resource type
+const typeSelect = document.getElementById('resource_type');
+const fileField = document.getElementById('file_field');
+const urlField = document.getElementById('url_field');
+
+function toggleFields() {
+  const type = typeSelect.value;
+  if (type === 'pdf') {
+    fileField.style.display = 'block';
+    urlField.style.display = 'none';
+  } else if (type === 'video') {
+    fileField.style.display = 'block';
+    urlField.style.display = 'none';
+  } else {
+    fileField.style.display = 'none';
+    urlField.style.display = 'block';
+  }
+}
+typeSelect.addEventListener('change', toggleFields);
+toggleFields();
+</script>
+{% endblock %}

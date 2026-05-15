@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+{% block title %}الجلسات المباشرة - {{ course.title_ar }}{% endblock %}
+
+{% block extra_css %}
+<style>
+:root {
+  --navy: #1B2A52;
+  --navy-light: #2d4080;
+  --gold: #F0B429;
+  --border: #e5e7eb;
+  --bg-soft: #f8f9fc;
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+
+.sessions-page { padding: 0 0 3rem; }
+
+.page-header {
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+.page-header__inner {
+  max-width: 1100px; margin: 0 auto;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.page-header__title { color: #fff; font-size: 1.6rem; font-weight: 700; margin: 0; }
+.page-header__sub { color: rgba(255,255,255,.65); font-size: .88rem; margin: .2rem 0 0; }
+
+.table-wrapper {
+  max-width: 1100px; margin: 0 auto; padding: 0 1rem;
+  background: #fff; border-radius: var(--radius);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+.sessions-table { width: 100%; border-collapse: collapse; }
+.sessions-table th {
+  padding: 1rem; font-size: .78rem; font-weight: 700;
+  color: var(--navy); text-align: right;
+  background: var(--bg-soft); border-bottom: 2px solid var(--border);
+}
+.sessions-table td { padding: 1rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.sessions-table tr:last-child td { border-bottom: none; }
+
+.platform-badge {
+  display: inline-flex; align-items: center; gap: .3rem;
+  padding: .2rem .6rem; border-radius: 20px; font-size: .7rem; font-weight: 600;
+}
+.platform-zoom { background: #dbeafe; color: #1e40af; }
+.platform-teams { background: #ede9fe; color: #6d28d9; }
+.platform-google_meet { background: #dcfce7; color: #15803d; }
+
+.status-badge {
+  display: inline-block; padding: .2rem .6rem;
+  border-radius: 20px; font-size: .7rem; font-weight: 600;
+}
+.status-scheduled { background: #fef3c7; color: #d97706; }
+.status-live { background: #dcfce7; color: #16a34a; animation: pulse 1.5s infinite; }
+.status-ended { background: #f3f4f6; color: #6b7280; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.6; } }
+
+.action-group { display: flex; gap: .5rem; }
+.btn-sm {
+  padding: .3rem .8rem; border-radius: 6px;
+  font-size: .75rem; text-decoration: none;
+  font-weight: 600;
+}
+.btn-gold { background: var(--gold); color: var(--navy); }
+.btn-gold:hover { background: #c8941f; color: var(--navy); }
+.btn-outline { border: 1px solid var(--border); color: var(--text-muted); background: #fff; }
+.btn-outline:hover { background: var(--bg-soft); }
+.btn-danger { background: #fee2e2; color: #dc2626; border: none; cursor: pointer; }
+.btn-danger:hover { background: #dc2626; color: #fff; }
+
+.empty-state { text-align: center; padding: 4rem; color: var(--text-muted); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="sessions-page">
+  
+  <div class="page-header">
+    <div class="page-header__inner">
+      <div>
+        <h1 class="page-header__title">🎥 الجلسات المباشرة</h1>
+        <p class="page-header__sub">{{ course.title_ar }}</p>
+      </div>
+      <a href="{{ url_for('professor.add_live_session', course_id=course.id) }}" class="btn-gold" style="display: inline-flex; align-items: center; gap: .4rem; padding: .6rem 1.2rem; border-radius: 8px; text-decoration: none;">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a.5.5 0 0 1 .5.5v6h6a.5.5 0 0 1 0 1h-6v6a.5.5 0 0 1-1 0v-6h-6a.5.5 0 0 1 0-1h6v-6A.5.5 0 0 1 8 1z"/></svg>
+        إضافة جلسة
+      </a>
+    </div>
+  </div>
+
+  <div class="table-wrapper">
+    {% if sessions %}
+    <table class="sessions-table">
+      <thead>
+        <tr><th>العنوان</th><th>المنصة</th><th>التاريخ والوقت</th><th>المدة</th><th>الحالة</th><th>إجراءات</th></tr>
+      </thead>
+      <tbody>
+        {% for s in sessions %}
+        <tr>
+          <td><strong>{{ s.title }}</strong><br><small class="text-muted">{{ s.description[:50] }}</small></td>
+          <td><span class="platform-badge platform-{{ s.platform }}">{{ s.platform|replace('_',' ')|title }}</span></td>
+          <td dir="ltr">{{ s.scheduled_at.strftime('%d/%m/%Y %H:%M') }}</td>
+          <td>{{ s.duration_min }} دقيقة</td>
+          <td><span class="status-badge status-{{ s.status }}">{{ s.status }}</span></td>
+          <td class="action-group">
+            {% if s.meeting_url %}<a href="{{ s.meeting_url }}" target="_blank" class="btn-sm btn-gold">انضم</a>{% endif %}
+            <form method="POST" action="{{ url_for('professor.delete_live_session', session_id=s.id) }}" onsubmit="return confirm('حذف الجلسة؟')">
+              <button type="submit" class="btn-sm btn-danger">حذف</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+      <svg width="64" height="64" viewBox="0 0 16 16" fill="currentColor" opacity=".2"><path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8z"/></svg>
+      <p>لا توجد جلسات مباشرة</p>
+      <a href="{{ url_for('professor.add_live_session', course_id=course.id) }}" class="btn-gold">أضف أول جلسة</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

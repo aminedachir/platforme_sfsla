@@ -71,6 +71,14 @@ class CourseForm(FlaskForm):
     )
 
     is_published = BooleanField("نشر التكوين")
+    
+    is_free = BooleanField("تكوين مجاني")  # ← أضف هذا
+    
+    price = IntegerField(  # ← أضف هذا
+        "السعر (دج)",
+        validators=[Optional(), NumberRange(min=0, max=999999)],
+        render_kw={"placeholder": "مثال: 5000"},
+    )
 
     submit = SubmitField("حفظ")
 
@@ -198,3 +206,154 @@ class LiveSessionForm(FlaskForm):
     )
 
     submit = SubmitField("إضافة الجلسة")
+
+
+
+# أضف هذا في نهاية الملف
+
+# ──────────────────────────────────────────────────────────────
+#  Edit Resource Form (للتعديل)
+# ──────────────────────────────────────────────────────────────
+
+class EditResourceForm(FlaskForm):
+    """Edit an existing resource."""
+    
+    title = StringField(
+        "عنوان المورد",
+        validators=[DataRequired(message="العنوان مطلوب"), Length(max=255)],
+    )
+    
+    type = SelectField(
+        "نوع المورد",
+        choices=[
+            ("pdf", "PDF"),
+            ("video", "فيديو"),
+            ("link", "رابط خارجي"),
+            ("slide", "عرض تقديمي"),
+        ],
+        validators=[DataRequired()],
+    )
+    
+    url = StringField(
+        "الرابط",
+        validators=[Optional(), URL(), Length(max=512)],
+    )
+    
+    description = TextAreaField(
+        "وصف",
+        validators=[Optional(), Length(max=1000)],
+    )
+    
+    order = IntegerField(
+        "الترتيب",
+        validators=[Optional(), NumberRange(min=0)],
+    )
+    
+    is_public = BooleanField("مرئي قبل التسجيل")
+    
+    submit = SubmitField("تحديث المورد")
+
+
+# ──────────────────────────────────────────────────────────────
+#  Edit Live Session Form (للتعديل)
+# ──────────────────────────────────────────────────────────────
+
+class EditLiveSessionForm(FlaskForm):
+    """Edit an existing live session."""
+    
+    title = StringField(
+        "عنوان الجلسة",
+        validators=[DataRequired(), Length(max=255)],
+    )
+    
+    description = TextAreaField(
+        "وصف الجلسة",
+        validators=[Optional(), Length(max=2000)],
+    )
+    
+    platform = SelectField(
+        "المنصة",
+        choices=[
+            ("zoom", "Zoom"),
+            ("teams", "Microsoft Teams"),
+            ("google_meet", "Google Meet"),
+            ("other", "أخرى"),
+        ],
+        validators=[DataRequired()],
+    )
+    
+    meeting_url = StringField(
+        "رابط الاجتماع",
+        validators=[Optional(), URL(), Length(max=512)],
+    )
+    
+    meeting_id = StringField(
+        "معرّف الاجتماع",
+        validators=[Optional(), Length(max=128)],
+    )
+    
+    password = StringField(
+        "كلمة السر",
+        validators=[Optional(), Length(max=64)],
+    )
+    
+    scheduled_at = DateTimeLocalField(
+        "تاريخ ووقت الجلسة",
+        format="%Y-%m-%dT%H:%M",
+        validators=[DataRequired()],
+    )
+    
+    duration_min = IntegerField(
+        "المدة (بالدقائق)",
+        validators=[Optional(), NumberRange(min=15, max=480)],
+    )
+    
+    status = SelectField(
+        "الحالة",
+        choices=[
+            ("scheduled", "مجدولة"),
+            ("live", "مباشرة الآن"),
+            ("ended", "منتهية"),
+        ],
+        validators=[DataRequired()],
+    )
+    
+    submit = SubmitField("تحديث الجلسة")
+
+
+# ──────────────────────────────────────────────────────────────
+#  Quick Course Filter Form (للفلترة)
+# ──────────────────────────────────────────────────────────────
+
+class CourseFilterForm(FlaskForm):
+    """Filter courses in professor dashboard."""
+    
+    status = SelectField(
+        "الحالة",
+        choices=[
+            ("all", "الكل"),
+            ("published", "منشور"),
+            ("draft", "مسودة"),
+        ],
+        validators=[Optional()],
+    )
+    
+    category_id = SelectField(
+        "الفئة",
+        coerce=int,
+        validators=[Optional()],
+    )
+    
+    search = StringField(
+        "بحث",
+        validators=[Optional(), Length(max=100)],
+        render_kw={"placeholder": "ابحث عن تكوين..."},
+    )
+    
+    submit = SubmitField("تصفية")
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        from app.models import Category
+        categories = Category.query.order_by(Category.name_ar).all()
+        self.category_id.choices = [(0, "جميع الفئات")] + [(c.id, c.name_ar) for c in categories]

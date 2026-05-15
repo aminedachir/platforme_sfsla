@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% block title %}الطلاب المسجلين{% endblock %}
+
+{% block extra_css %}
+<style>
+:root { --navy: #1B2A52; --navy-light: #2d4080; --gold: #F0B429; --border: #e5e7eb; --bg-soft: #f8f9fc; --radius: 12px; }
+.students-page { padding: 0 0 3rem; }
+.page-header { background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%); padding: 2rem; margin-bottom: 2rem; }
+.page-header__inner { max-width: 1200px; margin: 0 auto; }
+.page-header__title { color: #fff; font-size: 1.6rem; font-weight: 700; margin: 0; }
+.table-wrapper { max-width: 1200px; margin: 0 auto; padding: 0 1rem; background: #fff; border-radius: var(--radius); border: 1px solid var(--border); overflow: auto; }
+.students-table { width: 100%; border-collapse: collapse; min-width: 700px; }
+.students-table th { padding: 1rem; font-size: .78rem; font-weight: 700; color: var(--navy); text-align: right; background: var(--bg-soft); border-bottom: 2px solid var(--border); }
+.students-table td { padding: 1rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.avatar-sm { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+.progress-bar { width: 100px; height: 6px; background: #e5e7eb; border-radius: 10px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--gold); border-radius: 10px; }
+.empty-state { text-align: center; padding: 4rem; color: #6b7280; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="students-page">
+  <div class="page-header">
+    <div class="page-header__inner">
+      <h1 class="page-header__title">👥 الطلاب المسجلين</h1>
+      <p style="color: rgba(255,255,255,.7); margin: .3rem 0 0;">الطلاب المسجلين في تكويناتك</p>
+    </div>
+  </div>
+
+  <div class="table-wrapper">
+    {% if enrollments %}
+    <table class="students-table">
+      <thead>
+        <tr><th>الطالب</th><th>البريد الإلكتروني</th><th>التكوين</th><th>تاريخ التسجيل</th><th>التقدم</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for enrollment, student, course in enrollments %}
+        <tr>
+          <td>
+            <div style="display: flex; align-items: center; gap: .75rem;">
+              <img src="https://ui-avatars.com/api/?name={{ student.full_name|urlencode }}&background=1B2A52&color=fff&size=40" class="avatar-sm">
+              <div>
+                <div style="font-weight: 600;">{{ student.full_name }}</div>
+                {% if student.wilaya %}<div style="font-size: .7rem; color: #6b7280;">ولاية {{ student.wilaya }}</div>{% endif %}
+              </div>
+            </div>
+          </td>
+          <td dir="ltr" style="font-size: .85rem;">{{ student.email }}</td>
+          <td style="font-weight: 500;">{{ course.title_ar }}</td>
+          <td style="font-size: .8rem; color: #6b7280;">{{ enrollment.enrolled_at.strftime('%d/%m/%Y') }}</td>
+          <td>
+            <div style="display: flex; align-items: center; gap: .5rem;">
+              <div class="progress-bar"><div class="progress-fill" style="width: {{ enrollment.progress|int }}%;"></div></div>
+              <span style="font-size: .75rem; font-weight: 600;">{{ enrollment.progress|int }}%</span>
+            </div>
+          </td>
+          <td>
+            <a href="mailto:{{ student.email }}" class="btn-sm" style="background: var(--gold); color: #1B2A52; padding: .3rem .8rem; border-radius: 6px; text-decoration: none; font-size: .7rem; font-weight: 600;">📧 مراسلة</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+      <svg width="64" height="64" viewBox="0 0 16 16" fill="currentColor" opacity=".2"><path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/></svg>
+      <p>لا يوجد طلاب مسجلين بعد</p>
+      <small>عندما يسجل الطلاب في تكويناتك، سترونهم هنا</small>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
