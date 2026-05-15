@@ -871,13 +871,12 @@ body.ltr .resource-item:hover { transform: translateX(3px); }
               {% endif %}
 
             {% elif current_user.is_authenticated %}
-              <form action="{{ url_for('courses.enroll', course_id=course.id) if 'enroll' in url_for.__globals__.get('courses_bp', {}) else '#' }}"
-                    method="post">
+              <form action="{{ url_for('student.enroll', course_id=course.id) }}" method="post">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}">
                 <button type="submit" class="btn-enroll primary-enroll">
-                  <i class="bi bi-plus-circle me-1"></i> التسجيل في التكوين
+                    <i class="bi bi-plus-circle me-1"></i> التسجيل في التكوين
                 </button>
-              </form>
+            </form>
 
             {% else %}
               <a href="{{ url_for('auth.login') }}" class="btn-enroll login-btn">
