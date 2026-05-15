@@ -1,0 +1,263 @@
+{% extends 'base.html' %}
+{% block title %}إنشاء حساب{% endblock %}
+{% block navbar %}{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block extra_css %}
+<style>
+.auth-page{min-height:100vh;display:flex;}
+.auth-brand-panel{
+  width:38%;background:linear-gradient(145deg,#0D1529 0%,#1B2A52 55%,#2A3E80 100%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:3rem 2rem;position:relative;overflow:hidden;
+}
+.auth-form-panel{flex:1;background:var(--psf-gray-50);padding:2rem;overflow-y:auto;
+  display:flex;align-items:flex-start;justify-content:center;padding-top:3rem;}
+.auth-card{background:white;border-radius:20px;padding:2.5rem;width:100%;max-width:520px;
+  box-shadow:0 10px 40px rgba(27,42,82,0.10);margin-bottom:2rem;}
+.role-card{border:2px solid var(--color-border);border-radius:12px;padding:1rem 1.25rem;
+  cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:1rem;}
+.role-card:hover{border-color:var(--psf-navy-400);background:var(--psf-navy-50);}
+.role-card.selected{border-color:var(--color-primary);background:var(--psf-navy-50);}
+.role-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;
+  justify-content:center;font-size:1.25rem;flex-shrink:0;}
+.input-icon-wrap{position:relative;}
+.input-icon-wrap .bi{position:absolute;top:50%;transform:translateY(-50%);
+  right:14px;color:var(--psf-gray-400);font-size:1rem;pointer-events:none;}
+.input-icon-wrap input,.input-icon-wrap select{padding-right:2.5rem;}
+.password-strength{height:4px;border-radius:99px;transition:all 0.3s;margin-top:6px;}
+@media(max-width:768px){.auth-brand-panel{display:none;}}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+
+  <!-- Brand panel -->
+  <div class="auth-brand-panel">
+    <div class="text-center position-relative" style="z-index:2;">
+      <img src="{{ url_for('static', filename='images/logo.png') }}"
+           style="width:100px;height:100px;border-radius:50%;background:white;padding:7px;
+                  box-shadow:0 10px 40px rgba(0,0,0,0.3);margin-bottom:1.75rem;"
+           alt="PSFSLA" onerror="this.style.display='none'"/>
+      <h2 style="color:white;font-size:1.6rem;font-weight:900;margin-bottom:0.5rem;">انضم إلى PSFSLA</h2>
+      <p style="color:rgba(255,255,255,0.65);font-size:0.83rem;line-height:1.8;max-width:260px;">
+        ابدأ رحلتك في عالم المعلومات مع أفضل منصة تكوين جزائرية
+      </p>
+      <hr style="border-color:rgba(255,255,255,0.12);margin:1.75rem 0;"/>
+      <div class="d-flex flex-column gap-3 text-end">
+        {% for icon, label in [
+          ('bi-check-circle-fill','تسجيل مجاني بدون بطاقة بنكية'),
+          ('bi-shield-check-fill','بياناتك محمية ومشفرة'),
+          ('bi-lightning-charge-fill','وصول فوري لجميع المحتويات'),
+          ('bi-headset','دعم فني متاح على الدوام'),
+        ] %}
+        <div class="d-flex align-items-center gap-3">
+          <div style="width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,0.12);
+                      display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <i class="bi {{ icon }}" style="color:var(--psf-gold-400);font-size:0.85rem;"></i>
+          </div>
+          <span style="color:rgba(255,255,255,0.78);font-size:0.82rem;">{{ label }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Form panel -->
+  <div class="auth-form-panel">
+    <div class="auth-card">
+      <div class="mb-4">
+        <a href="{{ url_for('auth.login') }}" style="font-size:0.82rem;color:var(--psf-gray-500);"
+           class="d-flex align-items-center gap-1 mb-3">
+          <i class="bi bi-arrow-right"></i> العودة لتسجيل الدخول
+        </a>
+        <h1 style="font-size:1.5rem;font-weight:800;color:var(--color-primary);margin-bottom:0.25rem;">
+          إنشاء حساب جديد
+        </h1>
+        <p style="font-size:0.88rem;color:var(--psf-gray-500);">
+          أنشئ حسابك وابدأ التكوين اليوم
+        </p>
+      </div>
+
+      <form method="POST" novalidate>
+        {{ form.hidden_tag() }}
+
+        <!-- Role selector -->
+        <div class="mb-4">
+          <label class="form-label">نوع الحساب</label>
+          <div class="row g-2">
+            <div class="col-6">
+              <div class="role-card" id="role-student" onclick="selectRole('student')">
+                <div class="role-icon" style="background:var(--psf-navy-100);">
+                  <i class="bi bi-mortarboard" style="color:var(--psf-navy-700);"></i>
+                </div>
+                <div>
+                  <div style="font-weight:700;font-size:0.9rem;color:var(--color-primary);">طالب تكوين</div>
+                  <div style="font-size:0.72rem;color:var(--psf-gray-500);">وصول فوري</div>
+                </div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="role-card" id="role-professor" onclick="selectRole('professor')">
+                <div class="role-icon" style="background:var(--psf-gold-100);">
+                  <i class="bi bi-easel2" style="color:var(--psf-gold-700);"></i>
+                </div>
+                <div>
+                  <div style="font-weight:700;font-size:0.9rem;color:var(--color-primary);">أستاذ / مكوّن</div>
+                  <div style="font-size:0.72rem;color:var(--psf-gray-500);">يتطلب موافقة</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <input type="hidden" name="role" id="role-input" value="student"/>
+        </div>
+
+        <!-- Name row -->
+        <div class="row g-3 mb-3">
+          <div class="col-6">
+            {{ form.first_name.label(class="form-label") }}
+            <div class="input-icon-wrap">
+              {{ form.first_name(class="form-control" + (" is-invalid" if form.first_name.errors else ""),
+                               placeholder="محمد") }}
+              <i class="bi bi-person"></i>
+            </div>
+            {% for e in form.first_name.errors %}
+            <div class="invalid-feedback d-block" style="font-size:0.78rem;">{{ e }}</div>
+            {% endfor %}
+          </div>
+          <div class="col-6">
+            {{ form.last_name.label(class="form-label") }}
+            <div class="input-icon-wrap">
+              {{ form.last_name(class="form-control" + (" is-invalid" if form.last_name.errors else ""),
+                              placeholder="بن علي") }}
+              <i class="bi bi-person"></i>
+            </div>
+            {% for e in form.last_name.errors %}
+            <div class="invalid-feedback d-block" style="font-size:0.78rem;">{{ e }}</div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Email -->
+        <div class="mb-3">
+          {{ form.email.label(class="form-label") }}
+          <div class="input-icon-wrap">
+            {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else ""),
+                         placeholder="example@email.com") }}
+            <i class="bi bi-envelope"></i>
+          </div>
+          {% for e in form.email.errors %}
+          <div class="invalid-feedback d-block" style="font-size:0.78rem;">{{ e }}</div>
+          {% endfor %}
+        </div>
+
+        <!-- Phone + Wilaya -->
+        <div class="row g-3 mb-3">
+          <div class="col-6">
+            {{ form.phone.label(class="form-label") }}
+            <div class="input-icon-wrap">
+              {{ form.phone(class="form-control", placeholder="0XX XX XX XX") }}
+              <i class="bi bi-telephone"></i>
+            </div>
+          </div>
+          <div class="col-6">
+            {{ form.wilaya.label(class="form-label") }}
+            {{ form.wilaya(class="form-select") }}
+          </div>
+        </div>
+
+        <!-- Password -->
+        <div class="mb-3">
+          {{ form.password.label(class="form-label") }}
+          <div class="input-icon-wrap">
+            {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else ""),
+                            placeholder="8 أحرف على الأقل", id="regPassword",
+                            oninput="checkStrength(this.value)") }}
+            <i class="bi bi-lock"></i>
+          </div>
+          <div class="password-strength mt-1" id="strengthBar"
+               style="background:var(--psf-gray-200);"></div>
+          <div style="font-size:0.72rem;color:var(--psf-gray-500);margin-top:4px;" id="strengthLabel"></div>
+          {% for e in form.password.errors %}
+          <div class="invalid-feedback d-block" style="font-size:0.78rem;">{{ e }}</div>
+          {% endfor %}
+        </div>
+
+        <!-- Confirm password -->
+        <div class="mb-3">
+          {{ form.confirm.label(class="form-label") }}
+          <div class="input-icon-wrap">
+            {{ form.confirm(class="form-control" + (" is-invalid" if form.confirm.errors else ""),
+                           placeholder="أعد كتابة كلمة المرور") }}
+            <i class="bi bi-lock-fill"></i>
+          </div>
+          {% for e in form.confirm.errors %}
+          <div class="invalid-feedback d-block" style="font-size:0.78rem;">{{ e }}</div>
+          {% endfor %}
+        </div>
+
+        <!-- Terms -->
+        <div class="mb-4">
+          <div class="form-check">
+            {{ form.terms(class="form-check-input" + (" is-invalid" if form.terms.errors else "")) }}
+            <label class="form-check-label" style="font-size:0.85rem;">
+              أوافق على
+              <a href="#" style="color:var(--psf-navy-700);">شروط الاستخدام</a>
+              و
+              <a href="#" style="color:var(--psf-navy-700);">سياسة الخصوصية</a>
+            </label>
+          </div>
+          {% for e in form.terms.errors %}
+          <div class="text-danger" style="font-size:0.78rem;">{{ e }}</div>
+          {% endfor %}
+        </div>
+
+        <button type="submit" class="btn btn-psf-primary w-100 py-2" style="font-size:1rem;font-weight:700;">
+          <i class="bi bi-person-plus me-2"></i>إنشاء الحساب
+        </button>
+      </form>
+
+      <p class="text-center mt-3 mb-0" style="font-size:0.88rem;color:var(--psf-gray-600);">
+        لديك حساب بالفعل؟
+        <a href="{{ url_for('auth.login') }}" style="color:var(--psf-navy-700);font-weight:700;">تسجيل الدخول</a>
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Role selector
+function selectRole(role) {
+  document.getElementById('role-student').classList.remove('selected');
+  document.getElementById('role-professor').classList.remove('selected');
+  document.getElementById('role-' + role).classList.add('selected');
+  document.getElementById('role-input').value = role;
+}
+selectRole('student'); // default
+
+// Password strength
+function checkStrength(val) {
+  const bar = document.getElementById('strengthBar');
+  const lbl = document.getElementById('strengthLabel');
+  let score = 0;
+  if (val.length >= 8) score++;
+  if (/[A-Z]/.test(val)) score++;
+  if (/[0-9]/.test(val)) score++;
+  if (/[^A-Za-z0-9]/.test(val)) score++;
+  const levels = [
+    { w:'0%',   bg:'var(--psf-gray-200)', text:'' },
+    { w:'25%',  bg:'var(--psf-danger)',   text:'ضعيفة' },
+    { w:'50%',  bg:'var(--psf-warning)',  text:'مقبولة' },
+    { w:'75%',  bg:'var(--psf-gold-500)', text:'جيدة' },
+    { w:'100%', bg:'var(--psf-success)',  text:'ممتازة' },
+  ];
+  const lvl = levels[score] || levels[0];
+  bar.style.width = lvl.w;
+  bar.style.background = lvl.bg;
+  lbl.textContent = lvl.text ? 'قوة كلمة المرور: ' + lvl.text : '';
+}
+</script>
+{% endblock %}

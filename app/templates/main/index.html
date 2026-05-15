@@ -1,0 +1,345 @@
+{% extends 'base.html' %}
+{% block title %}الرئيسية{% endblock %}
+
+{% block content %}
+
+<!-- ══════════════════════════════════════════════
+     HERO
+══════════════════════════════════════════════ -->
+<section class="hero">
+  <div class="container position-relative">
+    <div class="row align-items-center gy-5">
+
+      <div class="col-lg-6" data-aos="fade-right">
+        <div class="badge-psf badge-accent mb-3" style="font-size:0.78rem;">
+          <i class="bi bi-patch-check-fill me-1"></i>
+          المنصة الجزائرية الأولى لتكوين أخصائي المعلومات
+        </div>
+
+        <h1 class="hero-title">
+          طوّر مهاراتك في
+          <span class="highlight">علم المعلومات</span>
+          مع خبراء جزائريين
+        </h1>
+
+        <p class="hero-subtitle">
+          منصة PSFSLA توفر برامج تكوين متخصصة لأخصائي المعلومات والمكتبيين والأرشيفيين
+          بالجزائر، مع شهادات معترف بها وجلسات مباشرة مع أساتذة متخصصين.
+        </p>
+
+        <div class="d-flex flex-wrap gap-3">
+          <a href="{{ url_for('auth.register') }}" class="btn btn-psf-accent btn-lg px-4">
+            <i class="bi bi-rocket-takeoff me-2"></i>ابدأ التكوين مجاناً
+          </a>
+          <a href="{{ url_for('courses.list') }}" class="btn btn-psf-outline-white btn-lg px-4">
+            استعرض التكوينات
+            <i class="bi bi-arrow-left ms-2"></i>
+          </a>
+        </div>
+
+        <!-- Trust badges -->
+        <div class="d-flex align-items-center gap-4 mt-4 pt-2">
+          <div class="text-center">
+            <div class="stat-number" style="font-size:1.5rem;" data-counter data-target="1200">0</div>
+            <div class="stat-label" style="font-size:0.72rem;">طالب مسجل</div>
+          </div>
+          <div style="width:1px;height:40px;background:rgba(255,255,255,0.2);"></div>
+          <div class="text-center">
+            <div class="stat-number" style="font-size:1.5rem;" data-counter data-target="48">0</div>
+            <div class="stat-label" style="font-size:0.72rem;">تكوين متاح</div>
+          </div>
+          <div style="width:1px;height:40px;background:rgba(255,255,255,0.2);"></div>
+          <div class="text-center">
+            <div class="stat-number" style="font-size:1.5rem;" data-counter data-target="95">0</div>
+            <div class="stat-label" style="font-size:0.72rem;">% رضا الطلاب</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-6 text-center" data-aos="fade-left">
+        <div class="hero-image-wrap">
+          <!-- Decorative circles -->
+          <div style="position:absolute;width:400px;height:400px;border-radius:50%;
+                      border:1px solid rgba(255,255,255,0.08);top:50%;left:50%;
+                      transform:translate(-50%,-50%);"></div>
+          <div style="position:absolute;width:300px;height:300px;border-radius:50%;
+                      border:1px solid rgba(255,255,255,0.12);top:50%;left:50%;
+                      transform:translate(-50%,-50%);"></div>
+
+          <!-- Logo large -->
+          <img src="{{ url_for('static', filename='images/logo.png') }}"
+               style="width:260px;height:260px;border-radius:50%;
+                      background:white;padding:12px;
+                      box-shadow:0 20px 60px rgba(0,0,0,0.4);
+                      position:relative;z-index:2;"
+               alt="PSFSLA"
+               onerror="this.src='https://placehold.co/260x260/1B2A52/FFFFFF?text=PSFSLA'"/>
+
+          <!-- Floating badges -->
+          <div class="hero-floating-badge"
+               style="bottom:20px;right:-10px;animation:float 3s ease-in-out infinite;">
+            <i class="bi bi-patch-check-fill text-success"></i>
+            شهادة معتمدة
+          </div>
+          <div class="hero-floating-badge"
+               style="top:30px;left:-10px;animation:float 3.5s ease-in-out infinite 0.5s;">
+            <i class="bi bi-camera-video-fill" style="color:var(--psf-navy-700);"></i>
+            جلسات مباشرة
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<style>
+@keyframes float {
+  0%,100% { transform:translateY(0); }
+  50% { transform:translateY(-8px); }
+}
+</style>
+
+<!-- ══════════════════════════════════════════════
+     STATS BAR
+══════════════════════════════════════════════ -->
+<section class="stats-section">
+  <div class="container">
+    <div class="row text-center g-4">
+      <div class="col-6 col-md-3" data-aos="fade-up" data-aos-delay="0">
+        <span class="stat-number" data-counter data-target="1200">0</span>
+        <p class="stat-label">طالب مسجل</p>
+      </div>
+      <div class="col-6 col-md-3" data-aos="fade-up" data-aos-delay="100">
+        <span class="stat-number" data-counter data-target="48">0</span>
+        <p class="stat-label">برنامج تكوين</p>
+      </div>
+      <div class="col-6 col-md-3" data-aos="fade-up" data-aos-delay="200">
+        <span class="stat-number" data-counter data-target="32">0</span>
+        <p class="stat-label">أستاذ متخصص</p>
+      </div>
+      <div class="col-6 col-md-3" data-aos="fade-up" data-aos-delay="300">
+        <span class="stat-number" data-counter data-target="850">0</span>
+        <p class="stat-label">شهادة مسلّمة</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     CATEGORIES
+══════════════════════════════════════════════ -->
+<section class="section">
+  <div class="container">
+    <div class="text-center mb-5" data-aos="fade-up">
+      <h2 class="section-title">تخصصات التكوين</h2>
+      <div class="section-divider"></div>
+      <p class="section-subtitle">برامج تكوين شاملة تغطي جميع مجالات علم المعلومات والمكتبات</p>
+    </div>
+
+    <div class="row g-4">
+      {% set default_cats = [
+        ('المكتبات والتوثيق', 'Bibliothéconomie', 'bi-book-half', 12),
+        ('نظم المعلومات', 'Systèmes information', 'bi-database', 8),
+        ('الأرشفة الرقمية', 'Archivage numérique', 'bi-archive', 6),
+        ('إدارة المعرفة', 'Knowledge Management', 'bi-lightbulb', 5),
+        ('البيانات الضخمة', 'Big Data', 'bi-graph-up', 4),
+        ('الذكاء الاصطناعي', 'Intelligence Artificielle', 'bi-robot', 3),
+      ] %}
+
+      {% for cat in (categories if categories else default_cats) %}
+      <div class="col-6 col-md-4 col-lg-2" data-aos="zoom-in" data-aos-delay="{{ loop.index0 * 80 }}">
+        <div class="category-card" onclick="window.location='{{ url_for('courses.list') }}'">
+          <div class="cat-icon">
+            {% if cat is mapping %}
+              <i class="bi {{ cat.icon }}"></i>
+            {% else %}
+              <i class="bi {{ cat[2] }}"></i>
+            {% endif %}
+          </div>
+          <div class="cat-name">{{ cat.name_ar if cat is mapping else cat[0] }}</div>
+          <div class="cat-count">
+            {{ cat.courses.count() if cat is mapping else cat[3] }} تكوين
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     FEATURED COURSES
+══════════════════════════════════════════════ -->
+<section class="section bg-surface">
+  <div class="container">
+    <div class="text-center mb-5" data-aos="fade-up">
+      <h2 class="section-title">أبرز التكوينات</h2>
+      <div class="section-divider"></div>
+      <p class="section-subtitle">اختر تكوينك المناسب وابدأ مسيرتك المهنية</p>
+    </div>
+
+    <div class="row g-4">
+      {% for course in featured %}
+      <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="{{ loop.index0 * 100 }}">
+        <div class="psf-card course-card h-100">
+          <div class="position-relative">
+            <img src="{{ url_for('static', filename='images/uploads/' + course.thumbnail) }}"
+                 class="card-img-top"
+                 onerror="this.src='https://placehold.co/400x200/E6EBF9/1B2A52?text={{ course.title_ar[:20] }}'"
+                 alt="{{ course.title_ar }}"/>
+            <span class="course-badge">
+              {{ course.level|upper if course.level else 'مبتدئ' }}
+            </span>
+          </div>
+          <div class="card-body d-flex flex-column">
+            <div class="course-meta mb-2">
+              <span><i class="bi bi-person me-1"></i>{{ course.professor.full_name if course.professor else 'PSFSLA' }}</span>
+              <span><i class="bi bi-clock me-1"></i>{{ course.duration_hours }}س</span>
+              <span><i class="bi bi-people me-1"></i>{{ course.enrollment_count }}</span>
+            </div>
+            <h5 class="fw-700 mb-1" style="font-size:1rem;color:var(--color-primary);">
+              {{ course.title_ar }}
+            </h5>
+            <p class="text-muted-psf small flex-grow-1 mb-3">
+              {{ (course.description or '')[:100] }}…
+            </p>
+            <a href="{{ url_for('courses.detail', course_id=course.id) }}"
+               class="btn btn-psf-primary w-100 mt-auto">
+              عرض التكوين
+            </a>
+          </div>
+        </div>
+      </div>
+      {% else %}
+      <!-- Placeholder cards when no courses yet -->
+      {% for i in range(3) %}
+      <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="{{ i * 100 }}">
+        <div class="psf-card h-100">
+          <img src="https://placehold.co/400x200/E6EBF9/1B2A52?text=تكوين+{{ i+1 }}"
+               class="card-img-top" alt="تكوين"/>
+          <div class="card-body d-flex flex-column">
+            <div class="course-meta mb-2">
+              <span><i class="bi bi-person me-1"></i>أستاذ متخصص</span>
+              <span><i class="bi bi-clock me-1"></i>20س</span>
+            </div>
+            <h5 style="font-size:1rem;color:var(--color-primary);">
+              {% if i == 0 %}تكوين في علم المكتبات الرقمية
+              {% elif i == 1 %}إدارة الأرشيف الإلكتروني
+              {% else %}نظم استرجاع المعلومات{% endif %}
+            </h5>
+            <p class="text-muted-psf small flex-grow-1 mb-3">
+              برنامج تكوين متخصص يغطي الأساسيات والتطبيقات العملية في هذا المجال الحيوي.
+            </p>
+            <a href="{{ url_for('auth.register') }}" class="btn btn-psf-primary w-100 mt-auto">
+              سجل الآن
+            </a>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+      {% endfor %}
+    </div>
+
+    <div class="text-center mt-4">
+      <a href="{{ url_for('courses.list') }}" class="btn btn-psf-outline btn-lg px-5">
+        عرض جميع التكوينات <i class="bi bi-arrow-left ms-2"></i>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     FEATURES
+══════════════════════════════════════════════ -->
+<section class="section">
+  <div class="container">
+    <div class="text-center mb-5" data-aos="fade-up">
+      <h2 class="section-title">لماذا PSFSLA؟</h2>
+      <div class="section-divider"></div>
+    </div>
+
+    <div class="row g-4">
+      {% set features = [
+        ('bi-award', 'شهادات معتمدة', 'احصل على شهادات تكوين معترف بها تعزز مسيرتك المهنية في ميدان المعلومات'),
+        ('bi-camera-video', 'جلسات مباشرة', 'تابع جلسات تفاعلية مباشرة مع أساتذة متخصصين عبر منصات الفيديو'),
+        ('bi-file-earmark-pdf', 'موارد رقمية', 'حمّل الدروس والمحاضرات والكتب الإلكترونية في أي وقت ومن أي مكان'),
+        ('bi-graph-up-arrow', 'تتبع التقدم', 'راقب تقدمك في كل تكوين وتعرف على نقاط قوتك واحتياجاتك'),
+        ('bi-people', 'مجتمع متخصص', 'انضم لمجتمع أخصائي المعلومات الجزائريين وتبادل الخبرات'),
+        ('bi-phone', 'متاح على جميع الأجهزة', 'تعلّم من حاسوبك أو هاتفك في أي وقت يناسبك'),
+      ] %}
+      {% for icon, title, desc in features %}
+      <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="{{ loop.index0 * 80 }}">
+        <div class="feature-card">
+          <div class="feature-icon"><i class="bi {{ icon }}"></i></div>
+          <h4>{{ title }}</h4>
+          <p>{{ desc }}</p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     TESTIMONIALS
+══════════════════════════════════════════════ -->
+<section class="section bg-surface">
+  <div class="container">
+    <div class="text-center mb-5" data-aos="fade-up">
+      <h2 class="section-title">آراء الطلاب</h2>
+      <div class="section-divider"></div>
+    </div>
+
+    <div class="row g-4">
+      {% set testimonials = [
+        ('سارة بن عمر', 'أخصائية معلومات', 'وهران', 'PSFSLA غيّرت مساري المهني كلياً. البرامج عملية وذات جودة عالية، والأساتذة متعاونون جداً.'),
+        ('كريم معلم', 'أرشيفي، المكتبة الوطنية', 'الجزائر', 'أفضل منصة تكوين عربية في مجال المكتبات. الشهادات ساعدتني في الحصول على ترقية في عملي.'),
+        ('فاطمة الزهراء', 'طالبة دكتوراه', 'قسنطينة', 'المحاضرات منظمة ومعمّقة، والجلسات المباشرة تعطيك الفرصة للنقاش مع المختصين مباشرة.'),
+      ] %}
+      {% for name, role, city, text in testimonials %}
+      <div class="col-md-4" data-aos="fade-up" data-aos-delay="{{ loop.index0 * 120 }}">
+        <div class="testimonial-card">
+          <div class="stars">★★★★★</div>
+          <div class="quote-icon">"</div>
+          <p class="testimonial-text">{{ text }}</p>
+          <div class="testimonial-author">
+            <img src="https://ui-avatars.com/api/?name={{ name }}&background=1B2A52&color=fff&size=48"
+                 class="psf-avatar" alt="{{ name }}"/>
+            <div>
+              <div class="author-name">{{ name }}</div>
+              <div class="author-role">{{ role }} — {{ city }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     CTA SECTION
+══════════════════════════════════════════════ -->
+<section class="section">
+  <div class="container">
+    <div class="bg-navy-gradient rounded-psf p-5 text-center text-white" data-aos="zoom-in">
+      <h2 class="text-white mb-3" style="font-size:clamp(1.5rem,3vw,2.2rem);">
+        ابدأ رحلتك التكوينية اليوم
+      </h2>
+      <p style="color:rgba(255,255,255,0.8);font-size:1rem;margin-bottom:2rem;">
+        انضم لأكثر من 1200 أخصائي معلومات وطوّر مهاراتك مع PSFSLA
+      </p>
+      <div class="d-flex justify-content-center gap-3 flex-wrap">
+        <a href="{{ url_for('auth.register') }}" class="btn btn-psf-accent btn-lg px-5">
+          <i class="bi bi-person-plus me-2"></i>سجل مجاناً
+        </a>
+        <a href="{{ url_for('courses.list') }}" class="btn btn-psf-outline-white btn-lg px-5">
+          استعرض التكوينات
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

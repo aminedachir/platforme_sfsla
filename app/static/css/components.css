@@ -1,0 +1,358 @@
+/*
+ * PSFSLA — Components
+ * Reusable UI component styles built on top of the design system.
+ */
+
+/* ── Category cards ──────────────────────────────────────── */
+.category-card {
+  background: var(--psf-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 1.75rem 1.25rem;
+  text-align: center;
+  cursor: pointer;
+  transition: var(--transition);
+  box-shadow: var(--shadow-sm);
+}
+
+.category-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--psf-navy-300);
+}
+
+.category-card .cat-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-lg);
+  background: var(--psf-navy-100);
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.75rem;
+  margin: 0 auto 1rem;
+  transition: var(--transition);
+}
+
+.category-card:hover .cat-icon {
+  background: var(--color-primary);
+  color: var(--psf-white);
+}
+
+.category-card .cat-name {
+  font-weight: 700;
+  color: var(--color-primary);
+  font-size: 0.95rem;
+  margin-bottom: 0.25rem;
+}
+
+.category-card .cat-count {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+}
+
+/* ── Stats counter (landing page) ────────────────────────── */
+.stats-section {
+  background: var(--color-primary);
+  padding: 3.5rem 0;
+}
+
+.stat-number {
+  font-size: 2.75rem;
+  font-weight: 900;
+  color: var(--psf-white);
+  line-height: 1;
+  display: block;
+}
+
+.stat-label {
+  color: rgba(255,255,255,0.7);
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+}
+
+/* ── Testimonial card ────────────────────────────────────── */
+.testimonial-card {
+  background: var(--psf-white);
+  border-radius: var(--radius-lg);
+  padding: 1.75rem;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--color-border);
+  height: 100%;
+}
+
+.testimonial-card .quote-icon {
+  font-size: 2rem;
+  color: var(--psf-navy-300);
+  margin-bottom: 0.75rem;
+  line-height: 1;
+}
+
+.testimonial-card .testimonial-text {
+  color: var(--psf-gray-700);
+  font-size: 0.9rem;
+  line-height: 1.8;
+  margin-bottom: 1.25rem;
+}
+
+.testimonial-card .testimonial-author {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.testimonial-card .author-name {
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: var(--color-primary);
+}
+
+.testimonial-card .author-role {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+}
+
+.testimonial-card .stars {
+  color: var(--psf-gold-500);
+  font-size: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+/* ── Feature card ────────────────────────────────────────── */
+.feature-card {
+  padding: 2rem 1.5rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  background: var(--psf-white);
+  transition: var(--transition);
+}
+
+.feature-card:hover {
+  border-color: var(--psf-navy-300);
+  box-shadow: var(--shadow-md);
+}
+
+.feature-card .feature-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, var(--psf-navy-900), var(--psf-navy-700));
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  margin-bottom: 1.25rem;
+}
+
+.feature-card h4 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: var(--color-primary);
+}
+
+.feature-card p {
+  font-size: 0.88rem;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+/* ── Notification bell ───────────────────────────────────── */
+.notif-btn {
+  position: relative;
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  color: var(--psf-gray-600);
+  cursor: pointer;
+  transition: var(--transition);
+  padding: 0.35rem;
+}
+
+.notif-btn:hover { color: var(--color-primary); }
+
+.notif-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 16px;
+  height: 16px;
+  background: var(--psf-danger);
+  color: white;
+  border-radius: 50%;
+  font-size: 0.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+
+/* ── Progress ring (certificates) ───────────────────────── */
+.progress-ring {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.progress-ring svg circle {
+  transition: stroke-dashoffset 0.8s ease;
+}
+
+/* ── Certificate card ────────────────────────────────────── */
+.cert-card {
+  background: linear-gradient(135deg, var(--psf-navy-900), var(--psf-navy-700));
+  border-radius: var(--radius-xl);
+  padding: 2rem;
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+
+.cert-card::before {
+  content: '';
+  position: absolute;
+  top: -30px;
+  right: -30px;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.06);
+}
+
+.cert-card::after {
+  content: '';
+  position: absolute;
+  bottom: -40px;
+  left: -20px;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.04);
+}
+
+/* ── Empty state ─────────────────────────────────────────── */
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--color-text-muted);
+}
+
+.empty-state i {
+  font-size: 3.5rem;
+  color: var(--psf-gray-300);
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.empty-state p {
+  font-size: 0.95rem;
+  max-width: 320px;
+  margin: 0 auto 1.5rem;
+}
+
+/* ── Hero image float ────────────────────────────────────── */
+.hero-image-wrap {
+  position: relative;
+}
+
+.hero-image-wrap .hero-img {
+  border-radius: var(--radius-xl);
+  box-shadow: 0 30px 80px rgba(0,0,0,0.4);
+  width: 100%;
+  max-width: 440px;
+}
+
+.hero-floating-badge {
+  position: absolute;
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: 0.75rem 1rem;
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+/* ── Footer ──────────────────────────────────────────────── */
+.psf-footer {
+  background: var(--psf-navy-950);
+  color: rgba(255,255,255,0.72);
+  padding: 3.5rem 0 1.5rem;
+}
+
+.psf-footer .footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.psf-footer .footer-logo {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: white;
+  padding: 3px;
+}
+
+.psf-footer h6 {
+  color: var(--psf-white);
+  font-weight: 700;
+  margin-bottom: 1.25rem;
+  font-size: 0.95rem;
+}
+
+.psf-footer .footer-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.psf-footer .footer-links li {
+  margin-bottom: 0.5rem;
+}
+
+.psf-footer .footer-links a {
+  color: rgba(255,255,255,0.6);
+  font-size: 0.85rem;
+  transition: var(--transition);
+}
+
+.psf-footer .footer-links a:hover {
+  color: var(--psf-white);
+}
+
+.psf-footer .footer-divider {
+  border-color: rgba(255,255,255,0.08);
+  margin: 2.5rem 0 1.5rem;
+}
+
+.psf-footer .footer-bottom {
+  font-size: 0.78rem;
+  color: rgba(255,255,255,0.4);
+  text-align: center;
+}
+
+.social-btn {
+  width: 36px;
+  height: 36px;
+  background: rgba(255,255,255,0.08);
+  border-radius: var(--radius-md);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255,255,255,0.7);
+  transition: var(--transition);
+  font-size: 1rem;
+}
+
+.social-btn:hover {
+  background: var(--psf-navy-600);
+  color: white;
+}

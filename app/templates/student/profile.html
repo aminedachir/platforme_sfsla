@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% from 'macros/sidebar.html' import sidebar %}
+{% block title %}الملف الشخصي{% endblock %}
+{% block navbar %}{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block content %}
+{{ sidebar('student', current_user) }}
+
+<div class="dashboard-wrap" style="margin-right:260px; min-height:100vh;">
+  <div style="padding:1.75rem;">
+    
+    <div class="card border-0 shadow-sm" style="max-width:800px; margin:0 auto; border-radius:20px;">
+      <div class="card-header bg-white border-0 pt-4 pb-0">
+        <h4 class="mb-0" style="color:#1B2A52;">الملف الشخصي</h4>
+        <p class="text-muted small">تعديل معلومات حسابك</p>
+      </div>
+      
+      <div class="card-body p-4">
+        <form method="POST" enctype="multipart/form-data">
+          
+          <!-- Avatar -->
+          <div class="text-center mb-4">
+            <div class="position-relative d-inline-block">
+              <img src="https://ui-avatars.com/api/?name={{ current_user.full_name|urlencode }}&background=1B2A52&color=fff&size=100"
+                   style="width:100px;height:100px;border-radius:50%;object-fit:cover;border:3px solid #E6EBF9;"
+                   id="avatar-preview"/>
+              <label for="avatar-input" class="btn btn-sm btn-light position-absolute bottom-0 end-0 rounded-circle"
+                     style="background:#F0B429;border:none;width:32px;height:32px;">
+                <i class="bi bi-camera-fill" style="font-size:0.9rem;color:#1B2A52;"></i>
+              </label>
+              <input type="file" id="avatar-input" name="avatar" accept="image/*" style="display:none;" 
+                     onchange="previewAvatar(this)"/>
+            </div>
+            <div class="small text-muted mt-2">انقر على الكاميرا لتغيير الصورة</div>
+          </div>
+          
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">الاسم</label>
+              <input type="text" name="first_name" class="form-control" 
+                     value="{{ current_user.first_name }}" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">اللقب</label>
+              <input type="text" name="last_name" class="form-control" 
+                     value="{{ current_user.last_name }}" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">البريد الإلكتروني</label>
+              <input type="email" class="form-control" value="{{ current_user.email }}" disabled>
+              <div class="small text-muted">لا يمكن تغيير البريد الإلكتروني</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">رقم الهاتف</label>
+              <input type="tel" name="phone" class="form-control" value="{{ current_user.phone or '' }}">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">الولاية</label>
+              <select name="wilaya" class="form-select">
+                {% for value, label in wilayas %}
+                <option value="{{ value }}" {% if current_user.wilaya == value %}selected{% endif %}>
+                  {{ label }}
+                </option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-12">
+              <label class="form-label">نبذة عني</label>
+              <textarea name="bio" class="form-control" rows="3" 
+                        placeholder="اكتب نبذة قصيرة عنك...">{{ current_user.bio or '' }}</textarea>
+            </div>
+          </div>
+          
+          <div class="d-flex gap-3 mt-4 pt-3">
+            <button type="submit" class="btn btn-psf-primary px-4">
+              <i class="bi bi-save me-2"></i>حفظ التغييرات
+            </button>
+            <a href="{{ url_for('student.dashboard') }}" class="btn btn-outline-secondary px-4">
+              إلغاء
+            </a>
+          </div>
+        </form>
+        
+        <hr class="my-4">
+        
+        <div class="text-center">
+          <h6 class="text-muted mb-3">تغيير كلمة المرور</h6>
+          <a href="{{ url_for('auth.forgot_password') }}" class="btn btn-sm btn-outline-danger">
+            <i class="bi bi-key me-1"></i>إعادة تعيين كلمة المرور
+          </a>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+</div>
+
+<style>
+.dashboard-wrap { margin-right:260px; min-height:100vh; background:#F2F5FD; }
+@media(max-width:768px) { .dashboard-wrap { margin-right:0; } }
+</style>
+
+<script>
+function previewAvatar(input) {
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      document.getElementById('avatar-preview').src = e.target.result;
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+</script>
+{% endblock %}

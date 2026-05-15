@@ -1,0 +1,112 @@
+{# ── Reusable dashboard sidebar ────────────────────────────── #}
+{# Usage: {% from 'macros/sidebar.html' import sidebar %} #}
+{#        {{ sidebar(role='student', user=current_user) }}   #}
+
+{% macro sidebar(role='student', user=None) %}
+<!-- Sidebar overlay (mobile) -->
+<div id="sidebar-overlay"
+     style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:99;"
+     onclick="closeSidebar()"></div>
+
+<aside class="psf-sidebar" id="psf-sidebar">
+
+  <!-- Logo -->
+  <div class="sidebar-logo">
+    <img src="{{ url_for('static', filename='images/logo.png') }}"
+         alt="PSFSLA" onerror="this.style.display='none'"/>
+    <span>PSFSLA</span>
+  </div>
+
+  <!-- Navigation -->
+  <nav class="sidebar-nav">
+
+    {% if role == 'student' %}
+    <p class="nav-section-title">الطالب</p>
+    <a href="{{ url_for('student.dashboard') }}"  class="nav-item-link">
+      <i class="bi bi-grid-1x2"></i> لوحة التحكم
+    </a>
+    <a href="{{ url_for('student.my_courses') }}" class="nav-item-link">
+      <i class="bi bi-journal-bookmark"></i> تكويناتي
+    </a>
+    <a href="{{ url_for('student.my_certificates') }}" class="nav-item-link">
+      <i class="bi bi-award"></i> شهاداتي
+    </a>
+    <a href="{{ url_for('courses.list') }}" class="nav-item-link">
+      <i class="bi bi-compass"></i> استعرض التكوينات
+    </a>
+
+    {% elif role == 'professor' %}
+    <p class="nav-section-title">الأستاذ</p>
+    <a href="{{ url_for('professor.dashboard') }}"     class="nav-item-link">
+      <i class="bi bi-speedometer2"></i> لوحة التحكم
+    </a>
+    <a href="{{ url_for('professor.my_courses') }}"    class="nav-item-link">
+      <i class="bi bi-collection-play"></i> تكويناتي
+    </a>
+    <a href="{{ url_for('professor.create_course') }}" class="nav-item-link">
+      <i class="bi bi-plus-circle"></i> إضافة تكوين
+    </a>
+    <a href="{{ url_for('professor.live_sessions') }}" class="nav-item-link">
+      <i class="bi bi-camera-video"></i> الجلسات المباشرة
+    </a>
+    <a href="{{ url_for('professor.students') }}"      class="nav-item-link">
+      <i class="bi bi-people"></i> الطلاب
+    </a>
+
+    {% elif role == 'admin' %}
+    <p class="nav-section-title">الإدارة</p>
+    <a href="{{ url_for('admin.dashboard') }}"    class="nav-item-link">
+      <i class="bi bi-speedometer2"></i> لوحة التحكم
+    </a>
+    <a href="{{ url_for('admin.users') }}"        class="nav-item-link">
+      <i class="bi bi-people"></i> المستخدمون
+    </a>
+    <a href="{{ url_for('admin.courses') }}"      class="nav-item-link">
+      <i class="bi bi-collection"></i> التكوينات
+    </a>
+    <a href="{{ url_for('admin.categories') }}"   class="nav-item-link">
+      <i class="bi bi-tags"></i> التصنيفات
+    </a>
+    <a href="{{ url_for('admin.certificates') }}" class="nav-item-link">
+      <i class="bi bi-patch-check"></i> الشهادات
+    </a>
+    <p class="nav-section-title mt-3">التحليلات</p>
+    <a href="{{ url_for('admin.analytics') }}"    class="nav-item-link">
+      <i class="bi bi-bar-chart-line"></i> الإحصائيات
+    </a>
+    {% endif %}
+
+    <p class="nav-section-title mt-3">الحساب</p>
+    <a href="#" class="nav-item-link" onclick="alert('قريباً...'); return false;"></a>
+      <i class="bi bi-person-circle"></i> الملف الشخصي
+    </a>
+    <a href="{{ url_for('auth.logout') }}" class="nav-item-link"
+       style="color:rgba(255,150,150,0.85);">
+      <i class="bi bi-box-arrow-right"></i> تسجيل الخروج
+    </a>
+  </nav>
+
+  <!-- User badge at bottom -->
+  <div class="sidebar-footer">
+    <div class="d-flex align-items-center gap-2">
+      {% if user %}
+      <img src="https://ui-avatars.com/api/?name={{ user.full_name|urlencode }}&background=3250A0&color=fff&size=36"
+           style="width:36px;height:36px;border-radius:50%;" alt="avatar"/>
+      <div style="overflow:hidden;">
+        <div style="font-size:0.82rem;font-weight:700;color:white;
+                    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+          {{ user.full_name }}
+        </div>
+        <div style="font-size:0.68rem;color:rgba(255,255,255,0.5);">
+          {{ role|capitalize }}
+        </div>
+      </div>
+      {% else %}
+      <div style="color:rgba(255,255,255,0.5); font-size:0.75rem;">
+        لم يتم تسجيل الدخول
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</aside>
+{% endmacro %}
