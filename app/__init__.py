@@ -45,7 +45,8 @@ def create_app(config_name: str = None) -> Flask:
     @app.context_processor
     def inject_current_user():
         """Make current_user available in all templates"""
-        return dict(current_user=current_user)
+        lang = "ar"  
+        return dict(current_user=current_user,lang=lang)
     # ===================================
 
     # Register error handlers

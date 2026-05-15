@@ -1,0 +1,984 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ course.title_ar }}{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ── Course Hero ──────────────────────────────────────────── */
+.course-hero {
+  background: linear-gradient(135deg, var(--psf-navy-950) 0%, var(--psf-navy-800) 100%);
+  padding: 2.5rem 0 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.course-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.025'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+.course-hero-inner {
+  position: relative;
+  z-index: 1;
+}
+
+.course-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  color: rgba(255,255,255,0.55);
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.course-breadcrumb a { color: rgba(255,255,255,0.65); }
+.course-breadcrumb a:hover { color: var(--psf-gold-500); }
+.course-breadcrumb i { font-size: 0.7rem; }
+
+.course-hero-title {
+  font-size: clamp(1.4rem, 3vw, 2.1rem);
+  font-weight: 900;
+  color: #fff;
+  line-height: 1.35;
+  margin-bottom: 1rem;
+}
+
+.hero-meta-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-bottom: 1.5rem;
+}
+
+.hero-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.85);
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.28rem 0.7rem;
+  border-radius: var(--radius-full);
+}
+
+.hero-pill.gold { background: rgba(240,180,41,0.2); border-color: rgba(240,180,41,0.35); color: var(--psf-gold-400); }
+.hero-pill.green { background: rgba(22,163,74,0.2); border-color: rgba(22,163,74,0.35); color: #4ade80; }
+
+.professor-strip {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.25rem 0;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  margin-top: 0.5rem;
+}
+
+.professor-strip img {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.2);
+}
+
+.professor-strip .prof-info .name {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.2;
+}
+
+.professor-strip .prof-info .role {
+  font-size: 0.73rem;
+  color: rgba(255,255,255,0.5);
+}
+
+/* ── Layout ───────────────────────────────────────────────── */
+.course-layout {
+  background: var(--psf-gray-50);
+  min-height: 60vh;
+  padding: 2rem 0 3rem;
+}
+
+.course-main  { flex: 1; min-width: 0; }
+.course-aside { width: 320px; flex-shrink: 0; }
+
+@media (max-width: 991px) {
+  .course-aside {
+    width: 100%;
+    order: -1;
+  }
+}
+
+/* ── Tabs ─────────────────────────────────────────────────── */
+.course-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid var(--color-border);
+  margin-bottom: 1.5rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.course-tabs::-webkit-scrollbar { display: none; }
+
+.tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.7rem 1.2rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--psf-gray-500);
+  border: none;
+  background: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  cursor: pointer;
+  transition: var(--transition);
+  white-space: nowrap;
+}
+
+.tab-btn:hover { color: var(--color-primary); }
+.tab-btn.active {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+}
+
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ── Content sections ─────────────────────────────────────── */
+.content-card {
+  background: var(--psf-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  margin-bottom: 1.25rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.content-card h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  margin-bottom: 1rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.content-card h3 i { color: var(--psf-gold-500); font-size: 1.05rem; }
+
+.description-text {
+  color: var(--psf-gray-700);
+  font-size: 0.92rem;
+  line-height: 1.85;
+  white-space: pre-wrap;
+}
+
+/* Objectives list */
+.objectives-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.objectives-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  font-size: 0.88rem;
+  color: var(--psf-gray-700);
+  line-height: 1.6;
+}
+
+.objectives-list li i {
+  color: var(--psf-success);
+  margin-top: 0.2rem;
+  flex-shrink: 0;
+}
+
+/* ── Resources list ───────────────────────────────────────── */
+.resource-item {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--psf-white);
+  margin-bottom: 0.6rem;
+  transition: var(--transition);
+  cursor: pointer;
+}
+
+.resource-item:hover {
+  border-color: var(--psf-navy-200);
+  background: var(--psf-navy-50);
+  transform: translateX(-3px);
+}
+
+body.ltr .resource-item:hover { transform: translateX(3px); }
+
+.resource-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  flex-shrink: 0;
+}
+
+.res-pdf    { background: #fee2e2; color: #dc2626; }
+.res-video  { background: #ede9fe; color: #7c3aed; }
+.res-link   { background: #dbeafe; color: #2563eb; }
+.res-slide  { background: #fef3c7; color: #d97706; }
+.res-other  { background: var(--psf-navy-100); color: var(--psf-navy-700); }
+
+.resource-info { flex: 1; min-width: 0; }
+.resource-info .r-title {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--psf-gray-800);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.resource-info .r-desc {
+  font-size: 0.75rem;
+  color: var(--psf-gray-400);
+  margin-top: 0.1rem;
+}
+
+.resource-lock {
+  color: var(--psf-gray-300);
+  font-size: 0.9rem;
+}
+
+.resource-open {
+  color: var(--psf-navy-400);
+  font-size: 0.9rem;
+}
+
+/* ── Live sessions ────────────────────────────────────────── */
+.session-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.1rem;
+  margin-bottom: 0.75rem;
+  background: var(--psf-white);
+  transition: var(--transition);
+}
+
+.session-card:hover { border-color: var(--psf-navy-200); box-shadow: var(--shadow-sm); }
+
+.session-card .s-title {
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: var(--psf-gray-900);
+  margin-bottom: 0.35rem;
+}
+
+.session-card .s-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  font-size: 0.78rem;
+  color: var(--psf-gray-500);
+}
+
+.session-card .s-meta span { display: flex; align-items: center; gap: 0.25rem; }
+
+.session-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--radius-full);
+}
+
+.s-scheduled { background: var(--psf-info-bg);    color: var(--psf-info); }
+.s-live      { background: #fee2e2; color: #dc2626; }
+.s-live::before { content: '●'; animation: blink 1s infinite; }
+.s-ended     { background: var(--psf-gray-100);   color: var(--psf-gray-500); }
+
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+/* ── Sidebar card ─────────────────────────────────────────── */
+.sidebar-card {
+  background: var(--psf-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  position: sticky;
+  top: 80px;
+}
+
+.sidebar-thumb {
+  width: 100%;
+  height: 175px;
+  object-fit: cover;
+  background: linear-gradient(135deg, var(--psf-navy-900), var(--psf-navy-600));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255,255,255,0.25);
+  font-size: 3.5rem;
+}
+
+.sidebar-thumb img { width: 100%; height: 175px; object-fit: cover; }
+
+.sidebar-body { padding: 1.25rem; }
+
+/* Price block */
+.price-block { text-align: center; margin-bottom: 1.1rem; }
+.price-block .price-tag {
+  font-size: 1.6rem;
+  font-weight: 900;
+  color: var(--color-primary);
+  line-height: 1;
+}
+.price-block .price-tag.free-price { color: var(--psf-success); }
+.price-block .price-sub {
+  font-size: 0.75rem;
+  color: var(--psf-gray-400);
+  margin-top: 0.2rem;
+}
+
+/* Enroll button */
+.btn-enroll {
+  display: block;
+  width: 100%;
+  padding: 0.85rem;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 1rem;
+  font-weight: 700;
+  text-align: center;
+  cursor: pointer;
+  transition: var(--transition);
+  text-decoration: none;
+}
+
+.btn-enroll.primary-enroll {
+  background: var(--color-accent);
+  color: var(--psf-gray-900);
+  box-shadow: 0 4px 16px rgba(240,180,41,0.4);
+}
+
+.btn-enroll.primary-enroll:hover {
+  background: var(--psf-gold-400);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(240,180,41,0.5);
+}
+
+.btn-enroll.enrolled-btn {
+  background: var(--psf-success-bg);
+  color: var(--psf-success);
+  cursor: default;
+  font-size: 0.88rem;
+}
+
+.btn-enroll.login-btn {
+  background: var(--psf-navy-50);
+  color: var(--color-primary);
+  border: 2px solid var(--psf-navy-200);
+  font-size: 0.9rem;
+}
+
+.btn-enroll.login-btn:hover {
+  background: var(--color-primary);
+  color: #fff;
+  border-color: var(--color-primary);
+}
+
+/* Progress bar (for enrolled students) */
+.progress-section {
+  margin: 0.9rem 0;
+}
+
+.progress-section .progress-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+  color: var(--psf-gray-600);
+  margin-bottom: 0.4rem;
+  font-weight: 600;
+}
+
+.psf-progress {
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--psf-gray-200);
+  overflow: hidden;
+}
+
+.psf-progress-bar {
+  height: 100%;
+  border-radius: var(--radius-full);
+  background: linear-gradient(90deg, var(--psf-navy-600), var(--psf-navy-400));
+  transition: width 0.8s ease;
+}
+
+/* Info list */
+.info-list {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0 0;
+  border-top: 1px solid var(--color-border);
+  padding-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.info-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.83rem;
+}
+
+.info-list li .info-label {
+  color: var(--psf-gray-500);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.info-list li .info-value {
+  font-weight: 600;
+  color: var(--psf-gray-800);
+}
+
+/* ── Empty panels ─────────────────────────────────────────── */
+.panel-empty {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  color: var(--psf-gray-300);
+}
+
+.panel-empty i { font-size: 2.5rem; margin-bottom: 0.75rem; display: block; }
+.panel-empty p { color: var(--psf-gray-400); font-size: 0.88rem; margin: 0; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+{# ─── Determine enrollment state ──────────────────────────── #}
+{% set is_enrolled = false %}
+{% set enrollment  = none %}
+{% if current_user.is_authenticated %}
+  {% for enr in current_user.enrollments %}
+    {% if enr.course_id == course.id %}
+      {% set is_enrolled = true %}
+      {% set enrollment  = enr %}
+    {% endif %}
+  {% endfor %}
+{% endif %}
+
+{# ─── Helpers ─────────────────────────────────────────────── #}
+{% set level_ar = {'debutant': 'مبتدئ', 'intermediaire': 'متوسط', 'avance': 'متقدم'} %}
+{% set lang_ar  = {'ar': 'عربي', 'fr': 'فرنسي', 'ar_fr': 'عربي / فرنسي'} %}
+{% set platform_icons = {'zoom': 'bi-camera-video-fill', 'teams': 'bi-microsoft-teams', 'google_meet': 'bi-camera-video'} %}
+{% set res_classes = {'pdf': 'res-pdf', 'video': 'res-video', 'link': 'res-link', 'slide': 'res-slide'} %}
+{% set res_icons   = {'pdf': 'bi-file-earmark-pdf', 'video': 'bi-play-circle', 'link': 'bi-link-45deg', 'slide': 'bi-easel'} %}
+
+
+<!-- ══════════════ COURSE HERO ══════════════ -->
+<section class="course-hero">
+  <div class="container course-hero-inner">
+
+    <!-- Breadcrumb -->
+    <nav class="course-breadcrumb" aria-label="breadcrumb">
+      <a href="{{ url_for('main.index') if 'main' in url_for.__globals__.get('app', {}) else '#' }}">الرئيسية</a>
+      <i class="bi bi-chevron-left"></i>
+      <a href="{{ url_for('courses.list') }}">التكوينات</a>
+      <i class="bi bi-chevron-left"></i>
+      <span>{{ course.title_ar|truncate(40) }}</span>
+    </nav>
+
+    <div class="row">
+      <div class="col-lg-8">
+        <!-- Category tag -->
+        {% if course.category %}
+        <div class="mb-2">
+          <span style="font-size:0.75rem;font-weight:700;color:var(--psf-gold-400);
+                       text-transform:uppercase;letter-spacing:0.08em;">
+            <i class="bi {{ course.category.icon }} me-1"></i>{{ course.category.name_ar }}
+          </span>
+        </div>
+        {% endif %}
+
+        <h1 class="course-hero-title">{{ course.title_ar }}</h1>
+
+        <!-- Meta pills -->
+        <div class="hero-meta-pills">
+          <span class="hero-pill">
+            <i class="bi bi-bar-chart"></i>
+            {{ level_ar.get(course.level, course.level) }}
+          </span>
+          <span class="hero-pill">
+            <i class="bi bi-clock"></i>
+            {{ course.duration_hours }} ساعة
+          </span>
+          <span class="hero-pill">
+            <i class="bi bi-translate"></i>
+            {{ lang_ar.get(course.language, course.language) }}
+          </span>
+          <span class="hero-pill">
+            <i class="bi bi-people"></i>
+            {{ course.enrollment_count }} متسجل
+          </span>
+          {% if course.is_free %}
+          <span class="hero-pill green">
+            <i class="bi bi-patch-check"></i> مجاني
+          </span>
+          {% else %}
+          <span class="hero-pill gold">
+            <i class="bi bi-currency-exchange"></i> {{ "%.0f"|format(course.price) }} دج
+          </span>
+          {% endif %}
+        </div>
+
+        <!-- Professor strip -->
+        <div class="professor-strip">
+          <img src="https://ui-avatars.com/api/?name={{ course.professor.full_name|urlencode }}&background=3250A0&color=fff&size=44"
+               alt="{{ course.professor.full_name }}">
+          <div class="prof-info">
+            <div class="name">{{ course.professor.full_name }}</div>
+            <div class="role">
+              {{ course.professor.speciality or 'أستاذ' }}
+              {% if course.professor.institution %} — {{ course.professor.institution }}{% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════ MAIN LAYOUT ══════════════ -->
+<div class="course-layout">
+  <div class="container">
+    <div class="d-flex flex-column flex-lg-row gap-4 align-items-start">
+
+      <!-- ── LEFT: Tabs ── -->
+      <div class="course-main">
+
+        <!-- Tab buttons -->
+        <div class="course-tabs" role="tablist">
+          <button class="tab-btn active" data-tab="overview"
+                  role="tab" aria-selected="true" aria-controls="tab-overview">
+            <i class="bi bi-info-circle"></i> نظرة عامة
+          </button>
+          <button class="tab-btn" data-tab="resources"
+                  role="tab" aria-selected="false" aria-controls="tab-resources">
+            <i class="bi bi-collection"></i> الموارد
+            {% if course.resources.count() > 0 %}
+            <span class="badge-psf badge-primary ms-1">{{ course.resources.count() }}</span>
+            {% endif %}
+          </button>
+          <button class="tab-btn" data-tab="sessions"
+                  role="tab" aria-selected="false" aria-controls="tab-sessions">
+            <i class="bi bi-camera-video"></i> الجلسات المباشرة
+            {% if course.live_sessions.count() > 0 %}
+            <span class="badge-psf badge-primary ms-1">{{ course.live_sessions.count() }}</span>
+            {% endif %}
+          </button>
+        </div>
+
+        <!-- ══ TAB: Overview ══ -->
+        <div id="tab-overview" class="tab-panel active" role="tabpanel">
+
+          <!-- Description -->
+          {% if course.description %}
+          <div class="content-card" data-aos="fade-up">
+            <h3><i class="bi bi-text-left"></i> وصف التكوين</h3>
+            <p class="description-text">{{ course.description }}</p>
+          </div>
+          {% endif %}
+
+          <!-- Objectives -->
+          {% if course.objectives %}
+          <div class="content-card" data-aos="fade-up" data-aos-delay="80">
+            <h3><i class="bi bi-check2-all"></i> ماذا ستتعلم</h3>
+            <ul class="objectives-list">
+              {% set objs = course.objectives %}
+              {# Try to parse as JSON list, fallback to newlines #}
+              {% if objs.startswith('[') %}
+                {% for obj in objs|from_json %}
+                <li>
+                  <i class="bi bi-check-circle-fill"></i>
+                  {{ obj }}
+                </li>
+                {% endfor %}
+              {% else %}
+                {% for line in objs.split('\n') if line.strip() %}
+                <li>
+                  <i class="bi bi-check-circle-fill"></i>
+                  {{ line.strip() }}
+                </li>
+                {% endfor %}
+              {% endif %}
+            </ul>
+          </div>
+          {% endif %}
+
+          <!-- Professor bio -->
+          {% if course.professor.bio %}
+          <div class="content-card" data-aos="fade-up" data-aos-delay="120">
+            <h3><i class="bi bi-person-lines-fill"></i> عن الأستاذ</h3>
+            <div class="d-flex align-items-start gap-3">
+              <img src="https://ui-avatars.com/api/?name={{ course.professor.full_name|urlencode }}&background=1B2A52&color=fff&size=64"
+                   style="width:64px;height:64px;border-radius:50%;border:2px solid var(--psf-navy-200);flex-shrink:0;">
+              <div>
+                <div style="font-weight:700;color:var(--color-primary);margin-bottom:0.25rem;">
+                  {{ course.professor.full_name }}
+                </div>
+                <div style="font-size:0.8rem;color:var(--psf-gray-400);margin-bottom:0.6rem;">
+                  {{ course.professor.speciality or '' }}
+                  {% if course.professor.institution %} · {{ course.professor.institution }}{% endif %}
+                </div>
+                <p class="description-text" style="margin:0;">{{ course.professor.bio }}</p>
+              </div>
+            </div>
+          </div>
+          {% endif %}
+
+          <!-- If no content at all -->
+          {% if not course.description and not course.objectives and not course.professor.bio %}
+          <div class="content-card">
+            <div class="panel-empty">
+              <i class="bi bi-journal-text"></i>
+              <p>لم تتم إضافة تفاصيل لهذا التكوين بعد.</p>
+            </div>
+          </div>
+          {% endif %}
+
+        </div>{# /tab-overview #}
+
+        <!-- ══ TAB: Resources ══ -->
+        <div id="tab-resources" class="tab-panel" role="tabpanel">
+          <div class="content-card">
+            <h3><i class="bi bi-folder2-open"></i> الموارد التعليمية</h3>
+
+            {% set resources = course.resources.order_by('order').all() %}
+            {% if resources %}
+              {% for res in resources %}
+              {% set can_access = is_enrolled or res.is_public %}
+
+              <div class="resource-item {% if not can_access %}opacity-75{% endif %}"
+                   {% if can_access and (res.url or res.file_path) %}
+                   onclick="window.open('{{ res.url or url_for('static', filename='uploads/' + res.file_path) }}', '_blank')"
+                   {% endif %}>
+
+                <div class="resource-icon {{ res_classes.get(res.type, 'res-other') }}">
+                  <i class="bi {{ res_icons.get(res.type, 'bi-file-earmark') }}"></i>
+                </div>
+
+                <div class="resource-info">
+                  <div class="r-title">{{ res.title }}</div>
+                  {% if res.description %}
+                  <div class="r-desc">{{ res.description|truncate(60) }}</div>
+                  {% endif %}
+                </div>
+
+                {% if not can_access %}
+                <i class="bi bi-lock-fill resource-lock" title="يتطلب التسجيل"></i>
+                {% elif res.url or res.file_path %}
+                <i class="bi bi-box-arrow-up-left resource-open"></i>
+                {% endif %}
+              </div>
+              {% endfor %}
+
+              {% if not is_enrolled %}
+              <div class="mt-3 p-3 rounded-2"
+                   style="background:var(--psf-navy-50);border:1px dashed var(--psf-navy-200);
+                          text-align:center;font-size:0.83rem;color:var(--psf-navy-700);">
+                <i class="bi bi-lock me-1"></i>
+                سجّل في التكوين للوصول إلى جميع الموارد المقيّدة
+              </div>
+              {% endif %}
+
+            {% else %}
+            <div class="panel-empty">
+              <i class="bi bi-folder-x"></i>
+              <p>لم تتم إضافة أي موارد لهذا التكوين بعد.</p>
+            </div>
+            {% endif %}
+          </div>
+        </div>{# /tab-resources #}
+
+        <!-- ══ TAB: Live Sessions ══ -->
+        <div id="tab-sessions" class="tab-panel" role="tabpanel">
+          <div class="content-card">
+            <h3><i class="bi bi-camera-video-fill"></i> الجلسات المباشرة</h3>
+
+            {% set sessions = course.live_sessions.order_by('scheduled_at').all() %}
+            {% if sessions %}
+              {% for s in sessions %}
+              <div class="session-card">
+                <div class="d-flex align-items-start justify-content-between gap-2 mb-2">
+                  <div class="s-title">{{ s.title }}</div>
+                  <span class="session-status s-{{ s.status }}">
+                    {% if s.status == 'live' %}مباشر
+                    {% elif s.status == 'scheduled' %}مجدولة
+                    {% else %}انتهت
+                    {% endif %}
+                  </span>
+                </div>
+
+                {% if s.description %}
+                <p style="font-size:0.82rem;color:var(--psf-gray-500);margin-bottom:0.6rem;">
+                  {{ s.description|truncate(100) }}
+                </p>
+                {% endif %}
+
+                <div class="s-meta">
+                  <span>
+                    <i class="bi bi-calendar3"></i>
+                    {{ s.scheduled_at.strftime('%d/%m/%Y') }}
+                  </span>
+                  <span>
+                    <i class="bi bi-clock"></i>
+                    {{ s.scheduled_at.strftime('%H:%M') }}
+                  </span>
+                  <span>
+                    <i class="bi bi-hourglass-split"></i>
+                    {{ s.duration_min }} دقيقة
+                  </span>
+                  <span>
+                    <i class="bi {{ platform_icons.get(s.platform, 'bi-camera-video') }}"></i>
+                    {{ s.platform|capitalize }}
+                  </span>
+                </div>
+
+                {% if is_enrolled and s.meeting_url and s.status != 'ended' %}
+                <a href="{{ s.meeting_url }}" target="_blank" rel="noopener"
+                   class="btn-psf-primary d-inline-flex align-items-center gap-2 mt-2"
+                   style="font-size:0.82rem;padding:0.4rem 0.9rem;">
+                  <i class="bi bi-box-arrow-up-left"></i> انضم إلى الجلسة
+                </a>
+                {% endif %}
+
+                {% if s.is_recorded and s.recording_url and is_enrolled %}
+                <a href="{{ s.recording_url }}" target="_blank" rel="noopener"
+                   class="btn-psf-outline d-inline-flex align-items-center gap-2 mt-2 ms-2"
+                   style="font-size:0.82rem;padding:0.38rem 0.85rem;">
+                  <i class="bi bi-play-circle"></i> مشاهدة التسجيل
+                </a>
+                {% endif %}
+              </div>
+              {% endfor %}
+
+              {% if not is_enrolled %}
+              <div class="mt-3 p-3 rounded-2"
+                   style="background:var(--psf-navy-50);border:1px dashed var(--psf-navy-200);
+                          text-align:center;font-size:0.83rem;color:var(--psf-navy-700);">
+                <i class="bi bi-lock me-1"></i>
+                سجّل في التكوين للحصول على روابط الجلسات
+              </div>
+              {% endif %}
+
+            {% else %}
+            <div class="panel-empty">
+              <i class="bi bi-camera-video-off"></i>
+              <p>لا توجد جلسات مباشرة مجدولة حالياً.</p>
+            </div>
+            {% endif %}
+          </div>
+        </div>{# /tab-sessions #}
+
+      </div>{# /course-main #}
+
+
+      <!-- ── RIGHT: Sidebar ── -->
+      <aside class="course-aside">
+        <div class="sidebar-card">
+
+          <!-- Thumbnail -->
+          <div class="sidebar-thumb">
+            {% if course.thumbnail and course.thumbnail != 'course_default.png' %}
+            <img src="{{ url_for('static', filename='uploads/' + course.thumbnail) }}"
+                 alt="{{ course.title_ar }}"
+                 onerror="this.style.display='none';this.parentNode.style.display='flex';">
+            {% else %}
+            <i class="bi {{ course.category.icon if course.category else 'bi-book' }}"></i>
+            {% endif %}
+          </div>
+
+          <div class="sidebar-body">
+
+            <!-- Price -->
+            <div class="price-block">
+              <div class="price-tag {% if course.is_free %}free-price{% endif %}">
+                {% if course.is_free %}مجاني{% else %}{{ "%.0f"|format(course.price) }} دج{% endif %}
+              </div>
+              <div class="price-sub">
+                {% if course.is_free %}بدون أي رسوم{% else %}رسوم التسجيل{% endif %}
+              </div>
+            </div>
+
+            <!-- Progress (enrolled students) -->
+            {% if is_enrolled and enrollment %}
+            <div class="progress-section">
+              <div class="progress-label">
+                <span>التقدم</span>
+                <span>{{ "%.0f"|format(enrollment.progress) }}%</span>
+              </div>
+              <div class="psf-progress">
+                <div class="psf-progress-bar" style="width: {{ enrollment.progress }}%"></div>
+              </div>
+              {% if enrollment.status == 'completed' %}
+              <div class="mt-2 text-center" style="font-size:0.78rem;color:var(--psf-success);font-weight:700;">
+                <i class="bi bi-patch-check-fill me-1"></i> اكتمل التكوين
+              </div>
+              {% endif %}
+            </div>
+            {% endif %}
+
+            <!-- CTA button -->
+            {% if is_enrolled %}
+              {% if enrollment and enrollment.status == 'completed' %}
+              <a href="{{ url_for('student.my_certificates') }}"
+                 class="btn-enroll enrolled-btn">
+                <i class="bi bi-award me-1"></i> عرض الشهادة
+              </a>
+              {% else %}
+              <a href="{{ url_for('student.my_courses') }}"
+                 class="btn-enroll enrolled-btn">
+                <i class="bi bi-check-circle-fill me-1"></i> أنت مسجّل في هذا التكوين
+              </a>
+              {% endif %}
+
+            {% elif current_user.is_authenticated %}
+              <form action="{{ url_for('courses.enroll', course_id=course.id) if 'enroll' in url_for.__globals__.get('courses_bp', {}) else '#' }}"
+                    method="post">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}">
+                <button type="submit" class="btn-enroll primary-enroll">
+                  <i class="bi bi-plus-circle me-1"></i> التسجيل في التكوين
+                </button>
+              </form>
+
+            {% else %}
+              <a href="{{ url_for('auth.login') }}" class="btn-enroll login-btn">
+                <i class="bi bi-box-arrow-in-left me-1"></i> سجّل دخولك للتسجيل
+              </a>
+            {% endif %}
+
+            <!-- Info list -->
+            <ul class="info-list">
+              <li>
+                <span class="info-label">
+                  <i class="bi bi-clock"></i> المدة
+                </span>
+                <span class="info-value">{{ course.duration_hours }} ساعة</span>
+              </li>
+              <li>
+                <span class="info-label">
+                  <i class="bi bi-bar-chart"></i> المستوى
+                </span>
+                <span class="info-value">{{ level_ar.get(course.level, course.level) }}</span>
+              </li>
+              <li>
+                <span class="info-label">
+                  <i class="bi bi-translate"></i> اللغة
+                </span>
+                <span class="info-value">{{ lang_ar.get(course.language, course.language) }}</span>
+              </li>
+              <li>
+                <span class="info-label">
+                  <i class="bi bi-collection"></i> الموارد
+                </span>
+                <span class="info-value">{{ course.resources.count() }} ملف</span>
+              </li>
+              <li>
+                <span class="info-label">
+                  <i class="bi bi-camera-video"></i> جلسات مباشرة
+                </span>
+                <span class="info-value">{{ course.live_sessions.count() }}</span>
+              </li>
+              <li>
+                <span class="info-label">
+                  <i class="bi bi-people"></i> المتسجلون
+                </span>
+                <span class="info-value">{{ course.enrollment_count }}</span>
+              </li>
+              {% if course.category %}
+              <li>
+                <span class="info-label">
+                  <i class="bi {{ course.category.icon }}"></i> التصنيف
+                </span>
+                <span class="info-value">{{ course.category.name_ar }}</span>
+              </li>
+              {% endif %}
+              {% if course.created_at %}
+              <li>
+                <span class="info-label">
+                  <i class="bi bi-calendar-plus"></i> تاريخ النشر
+                </span>
+                <span class="info-value">{{ course.created_at.strftime('%d/%m/%Y') }}</span>
+              </li>
+              {% endif %}
+            </ul>
+
+          </div>{# /sidebar-body #}
+        </div>{# /sidebar-card #}
+      </aside>
+
+    </div>{# /d-flex #}
+  </div>{# /container #}
+</div>{# /course-layout #}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ── Tab switching ──────────────────────────────────────────
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    // Deactivate all
+    document.querySelectorAll('.tab-btn').forEach(b => {
+      b.classList.remove('active');
+      b.setAttribute('aria-selected', 'false');
+    });
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+
+    // Activate clicked
+    btn.classList.add('active');
+    btn.setAttribute('aria-selected', 'true');
+    const target = document.getElementById('tab-' + btn.dataset.tab);
+    if (target) target.classList.add('active');
+  });
+});
+
+// ── Animate progress bar on load ─────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  const bar = document.querySelector('.psf-progress-bar');
+  if (bar) {
+    const w = bar.style.width;
+    bar.style.width = '0%';
+    setTimeout(() => { bar.style.width = w; }, 300);
+  }
+});
+</script>
+{% endblock %}
