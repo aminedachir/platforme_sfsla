@@ -1,7 +1,452 @@
 {% extends 'base.html' %}
-{% block title %}لوحة الأستاذ{% endblock %}
+{% block title %}لوحة الأستاذ — PSFSLA{% endblock %}
+
 {% block content %}
-<div class="container section">
-  <h1>لوحة الأستاذ — قيد البناء</h1>
-</div>
+<div class="prof-dashboard" dir="rtl">
+
+  <!-- ══════════════════ HEADER ══════════════════ -->
+  <div class="dash-header">
+    <div class="dash-header__inner">
+      <div class="dash-header__greeting">
+        <span class="dash-header__label">مرحباً،</span>
+        <h1 class="dash-header__name">{{ current_user.full_name }}</h1>
+        <p class="dash-header__sub">{{ current_user.speciality or 'أستاذ' }} — إدارة التكوينات والجلسات</p>
+      </div>
+      <a href="{{ url_for('professor.create_course') }}" class="btn-gold">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8 1a.5.5 0 0 1 .5.5v6h6a.5.5 0 0 1 0 1h-6v6a.5.5 0 0 1-1 0v-6h-6a.5.5 0 0 1 0-1h6v-6A.5.5 0 0 1 8 1z"/></svg>
+        تكوين جديد
+      </a>
+    </div>
+  </div>
+
+  <!-- ══════════════════ STATS CARDS ══════════════════ -->
+  <div class="stats-grid">
+
+    <div class="stat-card stat-card--navy">
+      <div class="stat-card__icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M1 2.828c.885-.37 2.154-.769 3.388-.893 1.33-.134 2.458.063 3.112.752v9.746c-.935-.53-2.12-.603-3.213-.493-1.18.12-2.37.461-3.287.811zm7.5-.141c.654-.689 1.782-.886 3.112-.752 1.234.124 2.503.523 3.388.893v9.746c-.917-.35-2.107-.692-3.287-.81-1.094-.111-2.278-.039-3.213.492zM8 1.783C7.015.936 5.587.81 4.287.94c-1.514.153-3.042.672-3.994 1.105A.5.5 0 0 0 0 2.5v11a.5.5 0 0 0 .707.455c.882-.4 2.303-.881 3.68-1.02 1.409-.142 2.59.087 3.223.877a.5.5 0 0 0 .78 0c.633-.79 1.814-1.019 3.222-.877 1.378.139 2.8.62 3.681 1.02A.5.5 0 0 0 16 13.5v-11a.5.5 0 0 0-.293-.455c-.952-.433-2.48-.952-3.994-1.105C10.413.809 8.985.936 8 1.783"/>
+        </svg>
+      </div>
+      <div class="stat-card__body">
+        <span class="stat-card__value">{{ stats.total_courses }}</span>
+        <span class="stat-card__label">إجمالي التكوينات</span>
+      </div>
+      <div class="stat-card__footer">
+        <span class="stat-card__badge">{{ stats.published_courses }} منشور</span>
+      </div>
+    </div>
+
+    <div class="stat-card stat-card--gold">
+      <div class="stat-card__icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6m-5.784 6A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1zM4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5"/>
+        </svg>
+      </div>
+      <div class="stat-card__body">
+        <span class="stat-card__value">{{ stats.total_students }}</span>
+        <span class="stat-card__label">إجمالي الطلاب</span>
+      </div>
+      <div class="stat-card__footer">
+        <a href="{{ url_for('professor.students') }}" class="stat-card__link">عرض الكل ←</a>
+      </div>
+    </div>
+
+    <div class="stat-card stat-card--teal">
+      <div class="stat-card__icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m7.5-6.923c-.67.204-1.335.82-1.887 1.855A7.97 7.97 0 0 0 5.145 4H7.5zM4.09 4a9.267 9.267 0 0 1 .64-1.539 6.7 6.7 0 0 1 .597-.933A7.025 7.025 0 0 0 2.255 4zm-.582 3.5c.03-.877.138-1.718.312-2.5H1.674a6.958 6.958 0 0 0-.656 2.5zM4.847 5a12.5 12.5 0 0 0-.338 2.5H7.5V5zM8.5 5v2.5h2.99a12.495 12.495 0 0 0-.337-2.5zM4.51 8.5a12.5 12.5 0 0 0 .337 2.5H7.5V8.5zm3.99 0V11h2.653c.187-.765.306-1.608.338-2.5zM5.145 12c.138.386.295.744.468 1.068.552 1.035 1.218 1.65 1.887 1.855V12zm.182 2.472a6.696 6.696 0 0 1-.597-.933A9.268 9.268 0 0 1 4.09 12H2.255a7.024 7.024 0 0 0 3.072 2.472zM3.82 11a13.652 13.652 0 0 1-.312-2.5h-2.49c.062.89.291 1.733.656 2.5zm6.853 3.472A7.024 7.024 0 0 0 13.745 12H11.91a9.27 9.27 0 0 1-.64 1.539 6.688 6.688 0 0 1-.597.933zM8.5 12v2.923c.67-.204 1.335-.82 1.887-1.855.173-.324.33-.682.468-1.068zm3.68-1h2.146c.365-.767.594-1.61.656-2.5h-2.49a13.65 13.65 0 0 1-.312 2.5zm2.802-3.5a6.959 6.959 0 0 0-.656-2.5H12.18c.174.782.282 1.623.312 2.5zM11.27 2.461c.247.464.462.98.64 1.539h1.835a7.024 7.024 0 0 0-3.072-2.472c.218.284.418.598.597.933zM10.855 4a7.966 7.966 0 0 0-.468-1.068C9.835 1.897 9.17 1.282 8.5 1.077V4z"/>
+        </svg>
+      </div>
+      <div class="stat-card__body">
+        <span class="stat-card__value">{{ stats.total_sessions }}</span>
+        <span class="stat-card__label">الجلسات المباشرة</span>
+      </div>
+      <div class="stat-card__footer">
+        <span class="stat-card__badge stat-card__badge--light">مجدولة ومنتهية</span>
+      </div>
+    </div>
+
+    <div class="stat-card stat-card--light">
+      <div class="stat-card__icon stat-card__icon--navy">
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1zm3 4a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0zm3 0a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0z"/>
+        </svg>
+      </div>
+      <div class="stat-card__body">
+        <span class="stat-card__value">{{ stats.total_courses - stats.published_courses }}</span>
+        <span class="stat-card__label">مسودات غير منشورة</span>
+      </div>
+      <div class="stat-card__footer">
+        <a href="{{ url_for('professor.my_courses') }}" class="stat-card__link">إدارة التكوينات ←</a>
+      </div>
+    </div>
+
+  </div><!-- /stats-grid -->
+
+  <!-- ══════════════════ MAIN CONTENT GRID ══════════════════ -->
+  <div class="dash-content-grid">
+
+    <!-- Recent Courses -->
+    <section class="dash-section">
+      <div class="dash-section__head">
+        <h2 class="dash-section__title">آخر التكوينات</h2>
+        <a href="{{ url_for('professor.my_courses') }}" class="dash-section__more">عرض الكل</a>
+      </div>
+
+      {% if recent_courses %}
+      <div class="course-list">
+        {% for course in recent_courses %}
+        <div class="course-row">
+          <div class="course-row__thumb">
+            <img src="{{ url_for('static', filename='uploads/thumbnails/' ~ course.thumbnail) }}"
+                 alt="{{ course.title_ar }}"
+                 onerror="this.src='{{ url_for('static', filename='img/course_default.png') }}'">
+          </div>
+          <div class="course-row__info">
+            <span class="course-row__title">{{ course.title_ar }}</span>
+            <span class="course-row__meta">
+              <span class="badge-level badge-level--{{ course.level }}">
+                {% if course.level == 'debutant' %}مبتدئ
+                {% elif course.level == 'intermediaire' %}متوسط
+                {% else %}متقدم{% endif %}
+              </span>
+              <span class="course-row__count">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16"><path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6m-5.784 6A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1zM4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5"/></svg>
+                {{ course.enrollment_count }} طالب
+              </span>
+            </span>
+          </div>
+          <div class="course-row__actions">
+            {% if course.is_published %}
+              <span class="badge-status badge-status--published">منشور</span>
+            {% else %}
+              <span class="badge-status badge-status--draft">مسودة</span>
+            {% endif %}
+            <a href="{{ url_for('professor.edit_course', course_id=course.id) }}" class="icon-btn" title="تعديل">
+              <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 16 16"><path d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.499.499 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11z"/></svg>
+            </a>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" viewBox="0 0 16 16" opacity=".25"><path d="M1 2.828c.885-.37 2.154-.769 3.388-.893 1.33-.134 2.458.063 3.112.752v9.746c-.935-.53-2.12-.603-3.213-.493-1.18.12-2.37.461-3.287.811zm7.5-.141c.654-.689 1.782-.886 3.112-.752 1.234.124 2.503.523 3.388.893v9.746c-.917-.35-2.107-.692-3.287-.81-1.094-.111-2.278-.039-3.213.492zM8 1.783C7.015.936 5.587.81 4.287.94c-1.514.153-3.042.672-3.994 1.105A.5.5 0 0 0 0 2.5v11a.5.5 0 0 0 .707.455c.882-.4 2.303-.881 3.68-1.02 1.409-.142 2.59.087 3.223.877a.5.5 0 0 0 .78 0c.633-.79 1.814-1.019 3.222-.877 1.378.139 2.8.62 3.681 1.02A.5.5 0 0 0 16 13.5v-11a.5.5 0 0 0-.293-.455c-.952-.433-2.48-.952-3.994-1.105C10.413.809 8.985.936 8 1.783"/></svg>
+        <p>لا توجد تكوينات بعد</p>
+        <a href="{{ url_for('professor.create_course') }}" class="btn-gold btn-gold--sm">أنشئ تكوينك الأول</a>
+      </div>
+      {% endif %}
+    </section>
+
+    <!-- Upcoming Sessions -->
+    <section class="dash-section">
+      <div class="dash-section__head">
+        <h2 class="dash-section__title">الجلسات القادمة</h2>
+      </div>
+
+      {% if upcoming_sessions %}
+      <div class="session-list">
+        {% for s in upcoming_sessions %}
+        <div class="session-card">
+          <div class="session-card__platform session-card__platform--{{ s.platform }}">
+            {% if s.platform == 'zoom' %}Z
+            {% elif s.platform == 'teams' %}T
+            {% else %}G{% endif %}
+          </div>
+          <div class="session-card__info">
+            <span class="session-card__title">{{ s.title }}</span>
+            <span class="session-card__course">{{ s.course.title_ar }}</span>
+            <span class="session-card__date">
+              {{ s.scheduled_at.strftime('%d/%m/%Y — %H:%M') }}
+            </span>
+          </div>
+          <div class="session-card__duration">
+            <span>{{ s.duration_min }} د</span>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" viewBox="0 0 16 16" opacity=".25"><path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m7.5-6.923c-.67.204-1.335.82-1.887 1.855A7.97 7.97 0 0 0 5.145 4H7.5zM4.09 4a9.267 9.267 0 0 1 .64-1.539 6.7 6.7 0 0 1 .597-.933A7.025 7.025 0 0 0 2.255 4zm-.582 3.5c.03-.877.138-1.718.312-2.5H1.674a6.958 6.958 0 0 0-.656 2.5zM4.847 5a12.5 12.5 0 0 0-.338 2.5H7.5V5zM8.5 5v2.5h2.99a12.495 12.495 0 0 0-.337-2.5zM4.51 8.5a12.5 12.5 0 0 0 .337 2.5H7.5V8.5zm3.99 0V11h2.653c.187-.765.306-1.608.338-2.5z"/></svg>
+        <p>لا توجد جلسات مجدولة</p>
+      </div>
+      {% endif %}
+    </section>
+
+  </div><!-- /dash-content-grid -->
+
+</div><!-- /prof-dashboard -->
+
+<!-- ══════════════════ SCOPED STYLES ══════════════════ -->
+<style>
+/* ─── Variables ─────────────────────────── */
+:root {
+  --navy: #1B2A52;
+  --navy-dark: #111d3a;
+  --navy-light: #2d4080;
+  --gold: #F0B429;
+  --gold-dark: #c8941f;
+  --gold-light: #fcd160;
+  --teal: #0d9488;
+  --text: #1a1a2e;
+  --text-muted: #6b7280;
+  --border: #e5e7eb;
+  --bg-soft: #f8f9fc;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --shadow: 0 2px 16px rgba(27,42,82,.10);
+  --shadow-lg: 0 8px 32px rgba(27,42,82,.16);
+}
+
+/* ─── Layout ─────────────────────────────── */
+.prof-dashboard { padding: 0 0 3rem; }
+
+/* ─── Header ─────────────────────────────── */
+.dash-header {
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+  padding: 2.5rem 2rem;
+  margin-bottom: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+.dash-header::before {
+  content: '';
+  position: absolute;
+  top: -40px; left: -40px;
+  width: 220px; height: 220px;
+  background: rgba(240,180,41,.08);
+  border-radius: 50%;
+}
+.dash-header::after {
+  content: '';
+  position: absolute;
+  bottom: -60px; right: -20px;
+  width: 300px; height: 300px;
+  background: rgba(255,255,255,.04);
+  border-radius: 50%;
+}
+.dash-header__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  z-index: 1;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.dash-header__label { color: var(--gold-light); font-size: .85rem; letter-spacing: .05em; }
+.dash-header__name { color: #fff; font-size: 1.8rem; font-weight: 700; margin: .1rem 0 .25rem; }
+.dash-header__sub { color: rgba(255,255,255,.65); font-size: .9rem; margin: 0; }
+
+/* ─── Gold Button ────────────────────────── */
+.btn-gold {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  background: var(--gold);
+  color: var(--navy-dark);
+  border: none;
+  padding: .65rem 1.3rem;
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  font-size: .9rem;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background .2s, transform .15s;
+  white-space: nowrap;
+}
+.btn-gold:hover { background: var(--gold-dark); transform: translateY(-1px); color: var(--navy-dark); }
+.btn-gold--sm { padding: .45rem 1rem; font-size: .82rem; }
+
+/* ─── Stats Grid ─────────────────────────── */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 1.25rem;
+  max-width: 1100px;
+  margin: 0 auto 2rem;
+  padding: 0 1rem;
+}
+.stat-card {
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: .75rem;
+  box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
+  transition: transform .2s, box-shadow .2s;
+}
+.stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+
+.stat-card--navy { background: var(--navy); color: #fff; }
+.stat-card--gold { background: var(--gold); color: var(--navy-dark); }
+.stat-card--teal { background: var(--teal); color: #fff; }
+.stat-card--light { background: #fff; color: var(--text); border: 1px solid var(--border); }
+
+.stat-card__icon {
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.15);
+  display: flex; align-items: center; justify-content: center;
+}
+.stat-card--gold .stat-card__icon { background: rgba(27,42,82,.12); }
+.stat-card--light .stat-card__icon { background: var(--bg-soft); }
+.stat-card__icon--navy { color: var(--navy); }
+
+.stat-card__body { flex: 1; }
+.stat-card__value { display: block; font-size: 2.25rem; font-weight: 800; line-height: 1; }
+.stat-card__label { font-size: .82rem; opacity: .8; margin-top: .2rem; display: block; }
+.stat-card--gold .stat-card__label { opacity: .7; }
+
+.stat-card__footer { }
+.stat-card__badge {
+  display: inline-block;
+  background: rgba(255,255,255,.2);
+  padding: .2rem .6rem;
+  border-radius: 20px;
+  font-size: .75rem;
+  font-weight: 600;
+}
+.stat-card--gold .stat-card__badge { background: rgba(27,42,82,.12); }
+.stat-card__badge--light { background: rgba(27,42,82,.08); color: var(--navy); }
+.stat-card__link { font-size: .8rem; font-weight: 600; color: inherit; text-decoration: none; opacity: .8; }
+.stat-card__link:hover { opacity: 1; }
+
+/* ─── Content Grid ───────────────────────── */
+.dash-content-grid {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 1.5rem;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+@media (max-width: 900px) { .dash-content-grid { grid-template-columns: 1fr; } }
+
+/* ─── Section ────────────────────────────── */
+.dash-section {
+  background: #fff;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  padding: 1.5rem;
+  box-shadow: var(--shadow);
+}
+.dash-section__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+  padding-bottom: .75rem;
+  border-bottom: 2px solid var(--bg-soft);
+}
+.dash-section__title { font-size: 1rem; font-weight: 700; color: var(--navy); margin: 0; }
+.dash-section__more { font-size: .8rem; color: var(--gold-dark); font-weight: 600; text-decoration: none; }
+.dash-section__more:hover { color: var(--navy); }
+
+/* ─── Course Row ─────────────────────────── */
+.course-list { display: flex; flex-direction: column; gap: .75rem; }
+.course-row {
+  display: flex;
+  align-items: center;
+  gap: .9rem;
+  padding: .75rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  transition: background .15s;
+}
+.course-row:hover { background: var(--bg-soft); }
+.course-row__thumb {
+  width: 56px; height: 42px;
+  border-radius: 6px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: var(--bg-soft);
+}
+.course-row__thumb img { width: 100%; height: 100%; object-fit: cover; }
+.course-row__info { flex: 1; min-width: 0; }
+.course-row__title { display: block; font-weight: 600; font-size: .9rem; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.course-row__meta { display: flex; align-items: center; gap: .6rem; margin-top: .25rem; }
+.course-row__count { font-size: .75rem; color: var(--text-muted); display: flex; align-items: center; gap: .25rem; }
+.course-row__actions { display: flex; align-items: center; gap: .5rem; flex-shrink: 0; }
+
+/* ─── Badges ─────────────────────────────── */
+.badge-level {
+  display: inline-block;
+  padding: .15rem .55rem;
+  border-radius: 20px;
+  font-size: .7rem;
+  font-weight: 700;
+}
+.badge-level--debutant { background: #dcfce7; color: #166534; }
+.badge-level--intermediaire { background: #fef9c3; color: #854d0e; }
+.badge-level--avance { background: #fee2e2; color: #991b1b; }
+
+.badge-status {
+  display: inline-block;
+  padding: .18rem .6rem;
+  border-radius: 20px;
+  font-size: .7rem;
+  font-weight: 700;
+}
+.badge-status--published { background: #dcfce7; color: #166534; }
+.badge-status--draft { background: #f3f4f6; color: #6b7280; }
+
+/* ─── Icon Button ────────────────────────── */
+.icon-btn {
+  width: 30px; height: 30px;
+  border-radius: 6px;
+  background: var(--bg-soft);
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--navy);
+  text-decoration: none;
+  transition: background .15s;
+}
+.icon-btn:hover { background: var(--navy); color: #fff; }
+
+/* ─── Session Cards ──────────────────────── */
+.session-list { display: flex; flex-direction: column; gap: .75rem; }
+.session-card {
+  display: flex;
+  align-items: center;
+  gap: .85rem;
+  padding: .85rem 1rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  transition: background .15s;
+}
+.session-card:hover { background: var(--bg-soft); }
+.session-card__platform {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; font-weight: 900;
+  flex-shrink: 0;
+}
+.session-card__platform--zoom { background: #dbeafe; color: #1e40af; }
+.session-card__platform--teams { background: #ede9fe; color: #6d28d9; }
+.session-card__platform--google_meet { background: #dcfce7; color: #15803d; }
+.session-card__platform--other { background: var(--bg-soft); color: var(--navy); }
+.session-card__info { flex: 1; min-width: 0; }
+.session-card__title { display: block; font-weight: 600; font-size: .88rem; color: var(--text); }
+.session-card__course { display: block; font-size: .75rem; color: var(--text-muted); margin-top: .1rem; }
+.session-card__date { display: block; font-size: .75rem; color: var(--gold-dark); margin-top: .15rem; font-weight: 600; }
+.session-card__duration { font-size: .75rem; color: var(--text-muted); font-weight: 600; background: var(--bg-soft); padding: .25rem .6rem; border-radius: 20px; }
+
+/* ─── Empty State ────────────────────────── */
+.empty-state {
+  text-align: center;
+  padding: 2.5rem 1rem;
+  color: var(--text-muted);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .75rem;
+}
+.empty-state p { font-size: .9rem; margin: 0; }
+</style>
 {% endblock %}
