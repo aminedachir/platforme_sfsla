@@ -1,0 +1,73 @@
+# ======================
+# Python cache
+# ======================
+__pycache__/
+*.py[cod]
+*$py.class
+
+# ======================
+# Virtual environment
+# ======================
+venv/
+env/
+ENV/
+.venv/
+
+# ======================
+# Environment variables
+# ======================
+.env
+.flaskenv
+
+# ======================
+# Flask instance folder
+# ======================
+instance/
+
+# ======================
+# Database files
+# ======================
+*.sqlite3
+*.db
+
+# ======================
+# Logs
+# ======================
+*.log
+logs/
+
+# ======================
+# IDE / editor files
+# ======================
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ======================
+# OS files
+# ======================
+.DS_Store
+Thumbs.db
+
+# ======================
+# Migrations (optional - depends on workflow)
+# If you use Flask-Migrate, KEEP this uncommented only if needed
+# migrations/
+
+# ======================
+# Uploads (important for your LMS)
+# ======================
+uploads/
+static/uploads/
+
+# ======================
+# Python testing
+# ======================
+.pytest_cache/
+.coverage
+
+# ======================
+# Jupyter notebooks
+# ======================
+.ipynb_checkpoints/
