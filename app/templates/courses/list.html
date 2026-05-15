@@ -393,7 +393,7 @@ body.ltr .course-price { margin-right: 0; margin-left: auto; }
       <!-- Thumbnail -->
       <div class="course-thumb">
         {% if course.thumbnail and course.thumbnail != 'course_default.png' %}
-        <img src="{{ url_for('static', filename='uploads/' + course.thumbnail) }}"
+        <img src="{{ url_for('static', filename='images/uploads/thumbnails/' + course.thumbnail) }}"
              alt="{{ course.title_ar }}"
              onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
         <div class="thumb-placeholder" style="display:none;">

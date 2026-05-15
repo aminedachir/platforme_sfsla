@@ -147,7 +147,7 @@
 
             {% if mode == 'edit' and course.thumbnail and course.thumbnail != 'course_default.png' %}
             <div class="thumb-preview">
-              <img src="{{ url_for('static', filename='images/uploads/' ~ course.thumbnail) }}"
+              <img src="{{ url_for('static', filename='images/uploads/thumbnails/' + course.thumbnail) }}"
                    alt="الصورة الحالية" id="thumb-preview-img">
             </div>
             {% else %}

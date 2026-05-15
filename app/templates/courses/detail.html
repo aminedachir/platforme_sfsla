@@ -818,7 +818,7 @@ body.ltr .resource-item:hover { transform: translateX(3px); }
           <!-- Thumbnail -->
           <div class="sidebar-thumb">
             {% if course.thumbnail and course.thumbnail != 'course_default.png' %}
-            <img src="{{ url_for('static', filename='uploads/' + course.thumbnail) }}"
+            <img src="{{ url_for('static', filename='images/uploads/thumbnails/' + course.thumbnail) }}"
                  alt="{{ course.title_ar }}"
                  onerror="this.style.display='none';this.parentNode.style.display='flex';">
             {% else %}

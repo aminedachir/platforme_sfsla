@@ -99,9 +99,9 @@
         {% for course in recent_courses %}
         <div class="course-row">
           <div class="course-row__thumb">
-            <img src="{{ url_for('static', filename='uploads/thumbnails/' ~ course.thumbnail) }}"
-                 alt="{{ course.title_ar }}"
-                 onerror="this.src='{{ url_for('static', filename='img/course_default.png') }}'">
+            <img src="{{ url_for('static', filename='images/uploads/thumbnails/' + course.thumbnail) }}"
+            alt="{{ course.title_ar }}"
+            onerror="this.src='https://placehold.co/200x150/1B2A52/FFFFFF?text=' + encodeURIComponent('{{ course.title_ar[:20] }}')">
           </div>
           <div class="course-row__info">
             <span class="course-row__title">{{ course.title_ar }}</span>
