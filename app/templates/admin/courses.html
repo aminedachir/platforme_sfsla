@@ -1,0 +1,242 @@
+{% extends "base.html" %}
+{% from 'macros/sidebar.html' import sidebar %}
+
+{% block title %}إدارة التكوينات{% endblock %}
+{% block navbar %}{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block content %}
+{{ sidebar(role='admin', user=current_user) }}
+
+<div class="psf-dashboard">
+
+  <div class="psf-dash-topbar">
+    <div class="d-flex align-items-center gap-2">
+      <button class="btn btn-sm d-md-none"
+              onclick="document.getElementById('psf-sidebar').classList.toggle('open');
+                       document.getElementById('sidebar-overlay').style.display='block';">
+        <i class="bi bi-list fs-5"></i>
+      </button>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0 small">
+          <li class="breadcrumb-item">
+            <a href="{{ url_for('admin.dashboard') }}">لوحة التحكم</a>
+          </li>
+          <li class="breadcrumb-item active">التكوينات</li>
+        </ol>
+      </nav>
+    </div>
+  </div>
+
+  <div class="psf-dash-content">
+
+    <!-- Filters -->
+    <div class="psf-card p-3 mb-4">
+      <form method="GET" class="row g-2 align-items-end">
+        <div class="col-12 col-md-4">
+          <label class="form-label mb-1">بحث</label>
+          <input type="text" name="q" value="{{ search }}"
+                 class="form-control form-control-sm"
+                 placeholder="عنوان التكوين...">
+        </div>
+        <div class="col-6 col-md-3">
+          <label class="form-label mb-1">التصنيف</label>
+          <select name="category" class="form-select form-select-sm">
+            <option value="">الكل</option>
+            {% for cat in categories %}
+            <option value="{{ cat.id }}" {% if cat_id == cat.id %}selected{% endif %}>
+              {{ cat.name_ar }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-6 col-md-2">
+          <label class="form-label mb-1">الحالة</label>
+          <select name="status" class="form-select form-select-sm">
+            <option value="">الكل</option>
+            <option value="published" {% if status=='published' %}selected{% endif %}>منشور</option>
+            <option value="draft"     {% if status=='draft'     %}selected{% endif %}>مسودة</option>
+          </select>
+        </div>
+        <div class="col-12 col-md-auto">
+          <button type="submit" class="btn btn-psf-primary btn-sm">
+            <i class="bi bi-search me-1"></i>بحث
+          </button>
+          <a href="{{ url_for('admin.courses') }}" class="btn btn-sm btn-outline-secondary ms-1">مسح</a>
+        </div>
+      </form>
+    </div>
+
+    <!-- Table -->
+    <div class="psf-card">
+      <div class="d-flex align-items-center justify-content-between p-3 border-bottom">
+        <h6 class="mb-0 fw-bold">
+          التكوينات
+          <span class="badge-psf badge-muted ms-2">{{ courses_pag.total }}</span>
+        </h6>
+      </div>
+      <div class="table-responsive">
+        <table class="table psf-table mb-0">
+          <thead>
+            <tr>
+              <th>التكوين</th>
+              <th>الأستاذ</th>
+              <th>التصنيف</th>
+              <th>المسجّلون</th>
+              <th>المستوى</th>
+              <th>الحالة</th>
+              <th>الإجراءات</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for course in courses_pag.items %}
+            <tr>
+              <td>
+                <div style="font-size:0.88rem;font-weight:600;">{{ course.title_ar }}</div>
+                <div style="font-size:0.72rem;color:var(--color-text-muted);">{{ course.title_fr }}</div>
+              </td>
+              <td style="font-size:0.84rem;">{{ course.professor.full_name }}</td>
+              <td>
+                {% if course.category %}
+                <span class="badge-psf badge-primary">{{ course.category.name_ar }}</span>
+                {% else %}
+                <span class="text-muted small">—</span>
+                {% endif %}
+              </td>
+              <td>
+                <span class="fw-bold" style="color:var(--psf-navy-700);">
+                  {{ course.enrollment_count }}
+                </span>
+              </td>
+              <td>
+                {% set lvl_map = {'debutant':'مبتدئ','intermediaire':'متوسط','avance':'متقدم'} %}
+                <span class="badge-psf badge-muted">{{ lvl_map.get(course.level, course.level) }}</span>
+              </td>
+              <td>
+                {% if course.is_published %}
+                <span class="badge-psf badge-success">منشور</span>
+                {% else %}
+                <span class="badge-psf badge-muted">مسودة</span>
+                {% endif %}
+              </td>
+              <td>
+                <div class="d-flex gap-1">
+
+                  {# Toggle publish #}
+                  <form method="POST"
+                        action="{{ url_for('admin.toggle_publish', course_id=course.id) }}"
+                        style="display:inline;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-sm"
+                            style="background:{% if course.is_published %}var(--psf-warning-bg){% else %}var(--psf-success-bg){% endif %};
+                                   color:{% if course.is_published %}var(--psf-warning){% else %}var(--psf-success){% endif %};
+                                   border:none;padding:0.25rem 0.65rem;border-radius:var(--radius-sm);
+                                   font-size:0.75rem;"
+                            title="{% if course.is_published %}إلغاء النشر{% else %}نشر{% endif %}">
+                      <i class="bi bi-{% if course.is_published %}eye-slash{% else %}eye{% endif %}"></i>
+                    </button>
+                  </form>
+
+                  {# Delete #}
+                  <button type="button" class="btn btn-sm"
+                          style="background:var(--psf-danger-bg);color:var(--psf-danger);
+                                 border:none;padding:0.25rem 0.65rem;border-radius:var(--radius-sm);
+                                 font-size:0.75rem;"
+                          onclick="confirmCourseDelete({{ course.id }}, '{{ course.title_fr|replace("'","\\'")|e }}')"
+                          title="حذف">
+                    <i class="bi bi-trash3-fill"></i>
+                  </button>
+
+                </div>
+              </td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="7" class="text-center py-4 text-muted">
+                لا توجد تكوينات مطابقة للبحث.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      {# Pagination #}
+      {% if courses_pag.pages > 1 %}
+      <div class="d-flex justify-content-center py-3">
+        <nav>
+          <ul class="pagination pagination-sm mb-0">
+            {% if courses_pag.has_prev %}
+            <li class="page-item">
+              <a class="page-link" href="{{ url_for('admin.courses', page=courses_pag.prev_num,
+                 q=search, category=cat_id or '', status=status) }}">
+                <i class="bi bi-chevron-right"></i>
+              </a>
+            </li>
+            {% endif %}
+            {% for p in courses_pag.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+              {% if p %}
+              <li class="page-item {% if p == courses_pag.page %}active{% endif %}">
+                <a class="page-link"
+                   href="{{ url_for('admin.courses', page=p, q=search, category=cat_id or '', status=status) }}">
+                  {{ p }}
+                </a>
+              </li>
+              {% else %}
+              <li class="page-item disabled"><span class="page-link">…</span></li>
+              {% endif %}
+            {% endfor %}
+            {% if courses_pag.has_next %}
+            <li class="page-item">
+              <a class="page-link" href="{{ url_for('admin.courses', page=courses_pag.next_num,
+                 q=search, category=cat_id or '', status=status) }}">
+                <i class="bi bi-chevron-left"></i>
+              </a>
+            </li>
+            {% endif %}
+          </ul>
+        </nav>
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+
+<form method="POST" id="deleteCourseForm" style="display:none;">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+</form>
+
+<div class="modal fade" id="confirmCourseDeleteModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="border-radius:var(--radius-lg);border:none;">
+      <div class="modal-header border-0 pb-0">
+        <h6 class="modal-title fw-bold">تأكيد حذف التكوين</h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p class="mb-0">هل أنت متأكد من حذف التكوين <strong id="deleteCourseTitle"></strong>؟<br>
+        <small class="text-danger">سيتم حذف جميع الموارد والتسجيلات المرتبطة به.</small></p>
+      </div>
+      <div class="modal-footer border-0">
+        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">إلغاء</button>
+        <button type="button" class="btn btn-sm btn-danger" id="confirmCourseDeleteBtn">حذف</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function confirmCourseDelete(courseId, courseTitle) {
+  document.getElementById('deleteCourseTitle').textContent = courseTitle;
+  document.getElementById('confirmCourseDeleteBtn').onclick = function() {
+    const form = document.getElementById('deleteCourseForm');
+    form.action = `/admin/courses/${courseId}/delete`;
+    form.submit();
+  };
+  new bootstrap.Modal(document.getElementById('confirmCourseDeleteModal')).show();
+}
+</script>
+{% endblock %}

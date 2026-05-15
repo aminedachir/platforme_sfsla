@@ -1,0 +1,304 @@
+{% extends "base.html" %}
+{% from 'macros/sidebar.html' import sidebar %}
+
+{% block title %}الإحصائيات والتحليلات{% endblock %}
+{% block navbar %}{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block content %}
+{{ sidebar(role='admin', user=current_user) }}
+
+<div class="psf-dashboard">
+
+  <div class="psf-dash-topbar">
+    <div class="d-flex align-items-center gap-2">
+      <button class="btn btn-sm d-md-none"
+              onclick="document.getElementById('psf-sidebar').classList.toggle('open');
+                       document.getElementById('sidebar-overlay').style.display='block';">
+        <i class="bi bi-list fs-5"></i>
+      </button>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0 small">
+          <li class="breadcrumb-item">
+            <a href="{{ url_for('admin.dashboard') }}">لوحة التحكم</a>
+          </li>
+          <li class="breadcrumb-item active">الإحصائيات</li>
+        </ol>
+      </nav>
+    </div>
+  </div>
+
+  <div class="psf-dash-content">
+
+    <!-- Summary KPIs -->
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-md-3">
+        <div class="psf-card p-3 text-center">
+          <div style="font-size:1.8rem;font-weight:800;color:var(--psf-navy-700);">
+            {{ completed_count }}
+          </div>
+          <div class="text-muted small mt-1">تكوينات مكتملة</div>
+          <div style="height:3px;background:var(--psf-success);border-radius:99px;margin-top:8px;"></div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="psf-card p-3 text-center">
+          <div style="font-size:1.8rem;font-weight:800;color:var(--psf-gold-700);">
+            {{ avg_progress }}%
+          </div>
+          <div class="text-muted small mt-1">متوسط التقدم</div>
+          <div style="height:3px;background:var(--psf-gold-500);border-radius:99px;margin-top:8px;"></div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="psf-card p-3 text-center">
+          <div style="font-size:1.8rem;font-weight:800;color:var(--psf-navy-900);">
+            {{ enroll_data|sum }}
+          </div>
+          <div class="text-muted small mt-1">تسجيل (آخر 12 شهرًا)</div>
+          <div style="height:3px;background:var(--psf-navy-500);border-radius:99px;margin-top:8px;"></div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="psf-card p-3 text-center">
+          <div style="font-size:1.8rem;font-weight:800;color:var(--psf-navy-600);">
+            {{ top_professors|length }}
+          </div>
+          <div class="text-muted small mt-1">أساتذة نشطون</div>
+          <div style="height:3px;background:var(--psf-navy-400);border-radius:99px;margin-top:8px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 1: Enrollment line chart + Donut roles -->
+    <div class="row g-4 mb-4">
+
+      <div class="col-md-8">
+        <div class="psf-card p-3 h-100">
+          <div class="d-flex align-items-center justify-content-between mb-3">
+            <h6 class="mb-0 fw-bold">التسجيلات الشهرية (آخر 12 شهر)</h6>
+            <span class="badge-psf badge-primary">
+              <i class="bi bi-graph-up me-1"></i>سنوي
+            </span>
+          </div>
+          <canvas id="enrollLineChart" height="200"></canvas>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="psf-card p-3 h-100">
+          <h6 class="fw-bold mb-3">توزيع المستخدمين حسب الدور</h6>
+          <canvas id="rolesDonut" height="220"></canvas>
+          <div class="mt-2">
+            <!-- Legend rendered by Chart.js automatically -->
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Row 2: Bar chart by category + Status pie -->
+    <div class="row g-4 mb-4">
+
+      <div class="col-md-7">
+        <div class="psf-card p-3 h-100">
+          <h6 class="fw-bold mb-3">التكوينات حسب التصنيف</h6>
+          <canvas id="catBarChart" height="230"></canvas>
+        </div>
+      </div>
+
+      <div class="col-md-5">
+        <div class="psf-card p-3 h-100">
+          <h6 class="fw-bold mb-3">حالة التسجيلات</h6>
+          <canvas id="statusPie" height="220"></canvas>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Top professors table -->
+    <div class="psf-card">
+      <div class="p-3 border-bottom">
+        <h6 class="mb-0 fw-bold">أفضل الأساتذة (حسب عدد الطلاب)</h6>
+      </div>
+      <div class="table-responsive">
+        <table class="table psf-table mb-0">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>الأستاذ</th>
+              <th>البريد الإلكتروني</th>
+              <th>عدد الطلاب</th>
+              <th>نسبة المشاركة</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% set max_students = top_professors[0][1] if top_professors else 1 %}
+            {% for professor, students in top_professors %}
+            <tr>
+              <td>
+                <span style="display:inline-flex;width:28px;height:28px;border-radius:50%;
+                             background:var(--psf-navy-{% if loop.index == 1 %}500{% elif loop.index == 2 %}300{% else %}100{% endif %});
+                             color:{% if loop.index <= 2 %}white{% else %}var(--psf-navy-700){% endif %};
+                             align-items:center;justify-content:center;font-size:0.78rem;font-weight:700;">
+                  {{ loop.index }}
+                </span>
+              </td>
+              <td>
+                <div class="d-flex align-items-center gap-2">
+                  <img src="https://ui-avatars.com/api/?name={{ professor.full_name|urlencode }}&background=3250A0&color=fff&size=32"
+                       class="psf-avatar" style="width:32px;height:32px;" alt=""/>
+                  <span style="font-size:0.88rem;font-weight:600;">{{ professor.full_name }}</span>
+                </div>
+              </td>
+              <td style="font-size:0.82rem;color:var(--color-text-muted);">{{ professor.email }}</td>
+              <td>
+                <span class="fw-bold" style="color:var(--psf-navy-700);">{{ students }}</span>
+              </td>
+              <td style="min-width:140px;">
+                <div class="d-flex align-items-center gap-2">
+                  <div class="progress flex-grow-1" style="height:8px;">
+                    <div class="progress-bar"
+                         style="width:{{ (students / max_students * 100)|int }}%;
+                                background:var(--psf-navy-{% if loop.index == 1 %}600{% else %}400{% endif %});">
+                    </div>
+                  </div>
+                  <span style="font-size:0.74rem;color:var(--color-text-muted);white-space:nowrap;">
+                    {{ (students / max_students * 100)|int }}%
+                  </span>
+                </div>
+              </td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="5" class="text-center py-4 text-muted">لا توجد بيانات.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+const NAVY   = '#3250A0';
+const NAVY2  = '#6689D6';
+const NAVY3  = '#96AEE6';
+const GOLD   = '#F0B429';
+const GREEN  = '#16A34A';
+const RED    = '#DC2626';
+const GRAY   = '#9CA3AF';
+
+// 1. Enrollment line chart
+(function(){
+  const labels = {{ enroll_labels | tojson }};
+  const data   = {{ enroll_data   | tojson }};
+  new Chart(document.getElementById('enrollLineChart'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: 'التسجيلات',
+        data,
+        borderColor: NAVY,
+        backgroundColor: 'rgba(50,80,160,0.08)',
+        borderWidth: 2.5,
+        pointBackgroundColor: NAVY,
+        pointRadius: 4,
+        tension: 0.4,
+        fill: true,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color:'rgba(0,0,0,0.05)' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+})();
+
+// 2. Roles donut
+(function(){
+  const labels = {{ role_labels | tojson }};
+  const data   = {{ role_counts | tojson }};
+  const colors = [NAVY, GOLD, GREEN, NAVY3, GRAY];
+  const roleAr = { student: 'طالب', professor: 'أستاذ', admin: 'مسؤول' };
+  const chart = new Chart(document.getElementById('rolesDonut'), {
+    type: 'doughnut',
+    data: {
+      labels: labels.map(l => roleAr[l] || l),
+      datasets: [{ data, backgroundColor: colors, borderWidth: 2, borderColor: '#fff' }]
+    },
+    options: {
+      responsive: true,
+      cutout: '62%',
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: { font: { size: 12 }, padding: 12 }
+        }
+      }
+    }
+  });
+})();
+
+// 3. Categories bar chart
+(function(){
+  const labels = {{ cat_labels | tojson }};
+  const data   = {{ cat_counts | tojson }};
+  new Chart(document.getElementById('catBarChart'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'عدد التكوينات',
+        data,
+        backgroundColor: [NAVY, NAVY2, NAVY3, GOLD, GREEN, '#7C3AED', '#0891B2', '#EA580C'],
+        borderRadius: 6,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color:'rgba(0,0,0,0.05)' } },
+        x: { grid: { display: false }, ticks: { font: { size: 11 } } }
+      }
+    }
+  });
+})();
+
+// 4. Status pie
+(function(){
+  const labels = {{ status_labels | tojson }};
+  const data   = {{ status_counts | tojson }};
+  const statusAr = { active:'نشط', completed:'مكتمل', suspended:'موقوف' };
+  const colors   = [NAVY2, GREEN, RED, GOLD, GRAY];
+  new Chart(document.getElementById('statusPie'), {
+    type: 'pie',
+    data: {
+      labels: labels.map(l => statusAr[l] || l),
+      datasets: [{ data, backgroundColor: colors, borderWidth: 2, borderColor: '#fff' }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: { font: { size: 12 }, padding: 12 }
+        }
+      }
+    }
+  });
+})();
+</script>
+{% endblock %}

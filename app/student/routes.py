@@ -28,8 +28,17 @@ def dashboard():
 @student_bp.route("/courses")
 @login_required
 def my_courses():
+    status = request.args.get('status', 'all')
     enrollments = current_user.enrollments.all()
-    return render_template("student/my_courses.html", enrollments=enrollments)
+    
+    if status == 'active':
+        enrollments = [e for e in enrollments if e.status == 'active']
+    elif status == 'completed':
+        enrollments = [e for e in enrollments if e.status == 'completed']
+    
+    return render_template("student/my_courses.html", 
+                         enrollments=enrollments, 
+                         status_filter=status)
 
 @student_bp.route("/certificates")
 @login_required
@@ -83,3 +92,12 @@ def profile():
     # استعراض الولايات للقائمة المنسدلة
     from app.auth.forms import WILAYAS
     return render_template("student/profile.html", user=current_user, wilayas=WILAYAS)
+
+
+@student_bp.route("/notifications/read-all", methods=["POST"])
+@login_required
+def mark_notifications_read():
+    Notification.query.filter_by(user_id=current_user.id, is_read=False).update({"is_read": True})
+    db.session.commit()
+    flash("تم تحديث جميع الإشعارات كمقروءة", "success")
+    return redirect(request.referrer or url_for("student.dashboard"))

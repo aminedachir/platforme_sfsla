@@ -1,7 +1,281 @@
-{% extends 'base.html' %}
-{% block title %}لوحة الإدارة{% endblock %}
+{% extends "base.html" %}
+{% from 'macros/sidebar.html' import sidebar %}
+
+{% block title %}لوحة التحكم — الإدارة{% endblock %}
+
+{% block navbar %}{% endblock %}
+{% block footer %}{% endblock %}
+
 {% block content %}
-<div class="container section">
-  <h1>لوحة الإدارة — قيد البناء</h1>
-</div>
+{{ sidebar(role='admin', user=current_user) }}
+
+<div class="psf-dashboard">
+
+  <!-- Top bar -->
+  <div class="psf-dash-topbar">
+    <div class="d-flex align-items-center gap-3">
+      <button class="btn btn-sm d-md-none"
+              onclick="document.getElementById('psf-sidebar').classList.toggle('open');
+                       document.getElementById('sidebar-overlay').style.display='block';">
+        <i class="bi bi-list fs-5"></i>
+      </button>
+      <div>
+        <h6 class="mb-0 fw-bold" style="color:var(--psf-navy-900);">لوحة التحكم</h6>
+        <small class="text-muted">مرحباً، {{ current_user.first_name }}</small>
+      </div>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      {% if pending_professors > 0 %}
+      <a href="{{ url_for('admin.users') }}?status=pending"
+         class="btn btn-sm btn-warning d-flex align-items-center gap-1">
+        <i class="bi bi-bell-fill"></i>
+        <span>{{ pending_professors }} طلب موافقة</span>
+      </a>
+      {% endif %}
+      <span class="badge-psf badge-muted">
+        <i class="bi bi-calendar3 me-1"></i>
+        {{ now().strftime('%Y/%m/%d') if now is defined else '' }}
+      </span>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="psf-dash-content">
+
+    <!-- ── Stat cards ── -->
+    <div class="row g-3 mb-4">
+
+      <div class="col-6 col-md-3">
+        <div class="stat-card">
+          <div class="stat-icon" style="background:var(--psf-navy-100);color:var(--psf-navy-700);">
+            <i class="bi bi-people-fill"></i>
+          </div>
+          <div>
+            <div class="stat-value">{{ total_users }}</div>
+            <div class="stat-label">إجمالي المستخدمين</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-6 col-md-3">
+        <div class="stat-card">
+          <div class="stat-icon" style="background:var(--psf-success-bg);color:var(--psf-success);">
+            <i class="bi bi-person-video3"></i>
+          </div>
+          <div>
+            <div class="stat-value">{{ total_professors }}</div>
+            <div class="stat-label">الأساتذة</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-6 col-md-3">
+        <div class="stat-card">
+          <div class="stat-icon" style="background:var(--psf-gold-100);color:var(--psf-gold-700);">
+            <i class="bi bi-collection-play-fill"></i>
+          </div>
+          <div>
+            <div class="stat-value">{{ total_courses }}</div>
+            <div class="stat-label">التكوينات
+              <span class="badge-psf badge-success ms-1">{{ published_courses }} منشور</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-6 col-md-3">
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#EDE9FE;color:#7C3AED;">
+            <i class="bi bi-journal-check"></i>
+          </div>
+          <div>
+            <div class="stat-value">{{ total_enrollments }}</div>
+            <div class="stat-label">التسجيلات</div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /row -->
+
+    <!-- ── Second row: chart + top courses ── -->
+    <div class="row g-3 mb-4">
+
+      <!-- Enrollment chart -->
+      <div class="col-md-7">
+        <div class="psf-card p-3 h-100">
+          <div class="d-flex align-items-center justify-content-between mb-3">
+            <h6 class="mb-0 fw-bold">التسجيلات الشهرية</h6>
+            <span class="badge-psf badge-primary">آخر 6 أشهر</span>
+          </div>
+          <canvas id="enrollChart" height="220"></canvas>
+        </div>
+      </div>
+
+      <!-- Top courses -->
+      <div class="col-md-5">
+        <div class="psf-card p-3 h-100">
+          <h6 class="fw-bold mb-3">أفضل التكوينات</h6>
+          {% if top_courses %}
+          {% for course, cnt in top_courses %}
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <div style="width:32px;height:32px;border-radius:var(--radius-sm);
+                        background:var(--psf-navy-100);display:flex;align-items:center;
+                        justify-content:center;font-size:0.7rem;font-weight:700;
+                        color:var(--psf-navy-700);flex-shrink:0;">
+              {{ loop.index }}
+            </div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:0.82rem;font-weight:600;
+                          white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                {{ course.title_ar }}
+              </div>
+              <div class="progress mt-1" style="height:4px;">
+                <div class="progress-bar"
+                     style="width:{{ [(cnt / top_courses[0][1] * 100)|int, 5]|max }}%;
+                            background:var(--psf-navy-500);">
+                </div>
+              </div>
+            </div>
+            <span class="badge-psf badge-primary">{{ cnt }}</span>
+          </div>
+          {% endfor %}
+          {% else %}
+          <p class="text-muted small">لا توجد بيانات بعد.</p>
+          {% endif %}
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── Third row: recent users + recent enrollments ── -->
+    <div class="row g-3">
+
+      <div class="col-md-6">
+        <div class="psf-card">
+          <div class="d-flex align-items-center justify-content-between p-3 border-bottom">
+            <h6 class="mb-0 fw-bold">آخر المستخدمين</h6>
+            <a href="{{ url_for('admin.users') }}" class="btn-psf-outline btn btn-sm">عرض الكل</a>
+          </div>
+          <div class="table-responsive">
+            <table class="table psf-table mb-0">
+              <thead>
+                <tr>
+                  <th>المستخدم</th>
+                  <th>الدور</th>
+                  <th>الحالة</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for u in recent_users %}
+                <tr>
+                  <td>
+                    <div class="d-flex align-items-center gap-2">
+                      <img src="https://ui-avatars.com/api/?name={{ u.full_name|urlencode }}&background=3250A0&color=fff&size=32"
+                           class="psf-avatar" style="width:32px;height:32px;" alt=""/>
+                      <div>
+                        <div style="font-size:0.84rem;font-weight:600;">{{ u.full_name }}</div>
+                        <div style="font-size:0.72rem;color:var(--color-text-muted);">{{ u.email }}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    {% for r in u.roles %}
+                    <span class="badge-psf badge-primary">{{ r.name }}</span>
+                    {% endfor %}
+                  </td>
+                  <td>
+                    {% if u.is_active %}
+                    <span class="badge-psf badge-success">نشط</span>
+                    {% else %}
+                    <span class="badge-psf badge-danger">معطّل</span>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="psf-card">
+          <div class="d-flex align-items-center justify-content-between p-3 border-bottom">
+            <h6 class="mb-0 fw-bold">آخر التسجيلات</h6>
+            <a href="{{ url_for('admin.courses') }}" class="btn-psf-outline btn btn-sm">التكوينات</a>
+          </div>
+          <div class="table-responsive">
+            <table class="table psf-table mb-0">
+              <thead>
+                <tr>
+                  <th>الطالب</th>
+                  <th>التكوين</th>
+                  <th>التقدم</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for enr in recent_enrollments %}
+                <tr>
+                  <td style="font-size:0.84rem;font-weight:600;">
+                    {{ enr.student.full_name }}
+                  </td>
+                  <td style="font-size:0.82rem;">
+                    {{ enr.course.title_ar[:30] }}{% if enr.course.title_ar|length > 30 %}…{% endif %}
+                  </td>
+                  <td>
+                    <div class="d-flex align-items-center gap-2">
+                      <div class="progress flex-grow-1" style="height:6px;">
+                        <div class="progress-bar" style="width:{{ enr.progress }}%;
+                             background:var(--psf-navy-500);"></div>
+                      </div>
+                      <span style="font-size:0.72rem;color:var(--color-text-muted);white-space:nowrap;">
+                        {{ enr.progress|int }}%
+                      </span>
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /row -->
+
+  </div><!-- /psf-dash-content -->
+</div><!-- /psf-dashboard -->
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+(function(){
+  const labels = {{ enroll_labels | tojson }};
+  const data   = {{ enroll_data   | tojson }};
+
+  new Chart(document.getElementById('enrollChart'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'التسجيلات',
+        data,
+        backgroundColor: 'rgba(50,80,160,0.75)',
+        borderRadius: 6,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color:'rgba(0,0,0,0.05)' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+})();
+</script>
 {% endblock %}

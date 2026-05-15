@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+{% from 'macros/sidebar.html' import sidebar %}
+{% block title %}شهاداتي{% endblock %}
+{% block navbar %}{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block extra_css %}
+<style>
+body { background:#F2F5FD; }
+.dashboard-wrap { margin-right:260px; min-height:100vh; }
+body.ltr .dashboard-wrap { margin-right:0; margin-left:260px; }
+.dash-topbar { background:#fff; border-bottom:1px solid #E5E7EB; padding:.75rem 1.75rem; display:flex; align-items:center; gap:1rem; position:sticky; top:0; z-index:50; box-shadow:0 1px 4px rgba(27,42,82,.06); }
+.page-title { font-size:1.05rem; font-weight:700; color:#1B2A52; margin:0; }
+
+.cert-card {
+  background: linear-gradient(135deg, #1B2A52 0%, #2A3E80 100%);
+  border-radius: 20px;
+  padding: 1.5rem;
+  color: white;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+  height: 100%;
+}
+.cert-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 40px rgba(27,42,82,0.2);
+}
+.cert-card::before {
+  content: '🎓';
+  position: absolute;
+  bottom: -20px;
+  left: -20px;
+  font-size: 100px;
+  opacity: 0.1;
+}
+.cert-id {
+  font-size: 0.7rem;
+  opacity: 0.7;
+  margin-bottom: 0.5rem;
+  font-family: monospace;
+}
+.cert-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+.cert-date {
+  font-size: 0.75rem;
+  opacity: 0.6;
+  margin-bottom: 1rem;
+}
+.cert-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+.btn-cert {
+  background: #F0B429;
+  color: #1B2A52;
+  border: none;
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+.btn-cert:hover {
+  background: #F5C842;
+  color: #1B2A52;
+}
+.empty-state {
+  text-align: center;
+  padding: 4rem;
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid #E5E7EB;
+}
+.empty-state i {
+  font-size: 4rem;
+  color: #D1D5DB;
+  margin-bottom: 1rem;
+  display: block;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+{{ sidebar('student', current_user) }}
+
+<div class="dashboard-wrap">
+  <div class="dash-topbar">
+    <button class="btn btn-sm border-0 d-lg-none" id="sidebar-toggle"
+            style="background:#F3F4F6;border-radius:8px;padding:.35rem .55rem;">
+      <i class="bi bi-list fs-5"></i>
+    </button>
+    <p class="page-title">📜 شهاداتي</p>
+  </div>
+
+  <div style="padding:1.75rem;">
+    {% if certificates %}
+    <div class="row g-4">
+      {% for cert in certificates %}
+      <div class="col-md-6 col-lg-4">
+        <div class="cert-card">
+          <div class="cert-id">{{ cert.certificate_id }}</div>
+          <div class="cert-title">{{ cert.course.title_ar }}</div>
+          <div class="cert-date">📅 تاريخ الإصدار: {{ cert.issued_at.strftime('%d/%m/%Y') }}</div>
+          <div class="cert-footer">
+            <span>
+              <i class="bi bi-patch-check-fill"></i>
+              <span style="font-size:0.7rem;">شهادة معتمدة</span>
+            </span>
+            <div>
+              <a href="#" class="btn-cert" onclick="alert('سيتم إضافة تحميل PDF قريباً'); return false;">
+                <i class="bi bi-download me-1"></i>تحميل
+              </a>
+              <a href="#" class="btn-cert me-1" onclick="alert('صفحة التحقق قيد التطوير'); return false;">
+                <i class="bi bi-shield-check"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <i class="bi bi-award"></i>
+      <h5 style="color:#1B2A52;">لا توجد شهادات بعد</h5>
+      <p class="text-muted">أكمل أي تكوين بنجاح للحصول على شهادتك المعتمدة</p>
+      <a href="{{ url_for('courses.list') }}" class="btn btn-psf-primary mt-2">
+        <i class="bi bi-compass me-1"></i>استعرض التكوينات
+      </a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('sidebar-toggle')?.addEventListener('click', () => {
+  document.getElementById('psf-sidebar')?.classList.toggle('open');
+  const ov = document.getElementById('sidebar-overlay');
+  if(ov) ov.style.display = ov.style.display==='none' ? 'block' : 'none';
+});
+</script>
+{% endblock %}

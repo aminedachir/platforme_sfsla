@@ -105,7 +105,7 @@ body.ltr .dashboard-wrap { margin-right:0; margin-left:260px; }
               <div class="c-card-fill" style="width:{{ e.progress|int }}%;"></div>
             </div>
             <div class="c-card-pct">{{ e.progress|int }}% مكتمل</div>
-            <a href="{{ url_for('student.course_detail', course_id=e.course_id) }}"
+            <a href="{{ url_for('courses.detail', course_id=e.course_id) }}"
                class="btn btn-sm w-100 mt-auto"
                style="background:#1B2A52;color:#fff;border-radius:10px;font-size:.82rem;font-weight:600;">
               {% if e.status == 'completed' %}

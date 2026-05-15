@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+{% from 'macros/sidebar.html' import sidebar %}
+
+{% block title %}إدارة التصنيفات{% endblock %}
+{% block navbar %}{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block content %}
+{{ sidebar(role='admin', user=current_user) }}
+
+<div class="psf-dashboard">
+
+  <div class="psf-dash-topbar">
+    <div class="d-flex align-items-center gap-2">
+      <button class="btn btn-sm d-md-none"
+              onclick="document.getElementById('psf-sidebar').classList.toggle('open');
+                       document.getElementById('sidebar-overlay').style.display='block';">
+        <i class="bi bi-list fs-5"></i>
+      </button>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0 small">
+          <li class="breadcrumb-item">
+            <a href="{{ url_for('admin.dashboard') }}">لوحة التحكم</a>
+          </li>
+          <li class="breadcrumb-item active">التصنيفات</li>
+        </ol>
+      </nav>
+    </div>
+  </div>
+
+  <div class="psf-dash-content">
+    <div class="row g-4">
+
+      <!-- ── Form (add / edit) ── -->
+      <div class="col-md-5 col-lg-4">
+        <div class="psf-card p-4" style="position:sticky;top:80px;">
+          <h6 class="fw-bold mb-3">
+            {% if editing %}
+            <i class="bi bi-pencil-square me-1"></i>تعديل التصنيف
+            {% else %}
+            <i class="bi bi-plus-circle me-1"></i>إضافة تصنيف جديد
+            {% endif %}
+          </h6>
+
+          <form method="POST"
+                action="{% if editing %}{{ url_for('admin.edit_category', cat_id=editing.id) }}{% else %}{{ url_for('admin.categories') }}{% endif %}">
+            {{ form.hidden_tag() }}
+
+            <div class="mb-3">
+              {{ form.name_ar.label(class="form-label") }}
+              {{ form.name_ar(class="form-control form-control-sm") }}
+              {% for e in form.name_ar.errors %}
+              <div class="text-danger small mt-1">{{ e }}</div>
+              {% endfor %}
+            </div>
+
+            <div class="mb-3">
+              {{ form.name_fr.label(class="form-label") }}
+              {{ form.name_fr(class="form-control form-control-sm") }}
+              {% for e in form.name_fr.errors %}
+              <div class="text-danger small mt-1">{{ e }}</div>
+              {% endfor %}
+            </div>
+
+            <div class="mb-3">
+              {{ form.slug.label(class="form-label") }}
+              {{ form.slug(class="form-control form-control-sm") }}
+              {% for e in form.slug.errors %}
+              <div class="text-danger small mt-1">{{ e }}</div>
+              {% endfor %}
+            </div>
+
+            <div class="mb-3">
+              {{ form.description.label(class="form-label") }}
+              {{ form.description(class="form-control form-control-sm") }}
+            </div>
+
+            <div class="row g-2 mb-3">
+              <div class="col-8">
+                {{ form.icon.label(class="form-label") }}
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text" id="iconPreview">
+                    <i class="bi bi-book" id="iconPreviewIcon"></i>
+                  </span>
+                  {{ form.icon(class="form-control", id="iconInput",
+                               oninput="document.getElementById('iconPreviewIcon').className='bi '+this.value") }}
+                </div>
+              </div>
+              <div class="col-4">
+                {{ form.color.label(class="form-label") }}
+                {{ form.color(class="form-control form-control-sm form-control-color w-100",
+                              style="height:36px;padding:2px 4px;") }}
+              </div>
+            </div>
+
+            <div class="mb-4">
+              {{ form.order.label(class="form-label") }}
+              {{ form.order(class="form-control form-control-sm") }}
+            </div>
+
+            <div class="d-flex gap-2">
+              <button type="submit" class="btn btn-psf-primary btn-sm flex-grow-1">
+                {% if editing %}حفظ التعديلات{% else %}إضافة{% endif %}
+              </button>
+              {% if editing %}
+              <a href="{{ url_for('admin.categories') }}"
+                 class="btn btn-sm btn-outline-secondary">إلغاء</a>
+              {% endif %}
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- ── Table ── -->
+      <div class="col-md-7 col-lg-8">
+        <div class="psf-card">
+          <div class="d-flex align-items-center justify-content-between p-3 border-bottom">
+            <h6 class="mb-0 fw-bold">
+              التصنيفات
+              <span class="badge-psf badge-muted ms-2">{{ categories|length }}</span>
+            </h6>
+          </div>
+          <div class="table-responsive">
+            <table class="table psf-table mb-0">
+              <thead>
+                <tr>
+                  <th>الأيقونة</th>
+                  <th>الاسم</th>
+                  <th>Slug</th>
+                  <th>التكوينات</th>
+                  <th>الترتيب</th>
+                  <th>الإجراءات</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for cat in categories %}
+                <tr {% if editing and editing.id == cat.id %}style="background:var(--psf-gold-100);"{% endif %}>
+                  <td>
+                    <div style="width:36px;height:36px;border-radius:var(--radius-sm);
+                                background:{{ cat.color }}18;display:flex;align-items:center;
+                                justify-content:center;color:{{ cat.color }};">
+                      <i class="bi {{ cat.icon }} fs-5"></i>
+                    </div>
+                  </td>
+                  <td>
+                    <div style="font-size:0.88rem;font-weight:600;">{{ cat.name_ar }}</div>
+                    <div style="font-size:0.73rem;color:var(--color-text-muted);">{{ cat.name_fr }}</div>
+                  </td>
+                  <td>
+                    <code style="font-size:0.78rem;background:var(--psf-gray-100);
+                                 padding:2px 6px;border-radius:4px;">{{ cat.slug }}</code>
+                  </td>
+                  <td>
+                    <span class="badge-psf badge-primary">{{ cat.courses.count() }}</span>
+                  </td>
+                  <td style="font-size:0.84rem;">{{ cat.order }}</td>
+                  <td>
+                    <div class="d-flex gap-1">
+                      <a href="{{ url_for('admin.edit_category', cat_id=cat.id) }}"
+                         class="btn btn-sm"
+                         style="background:var(--psf-navy-100);color:var(--psf-navy-700);
+                                border:none;padding:0.25rem 0.6rem;border-radius:var(--radius-sm);
+                                font-size:0.75rem;"
+                         title="تعديل">
+                        <i class="bi bi-pencil-fill"></i>
+                      </a>
+                      {% if cat.courses.count() == 0 %}
+                      <form method="POST"
+                            action="{{ url_for('admin.delete_category', cat_id=cat.id) }}"
+                            onsubmit="return confirm('هل أنت متأكد من حذف هذا التصنيف؟');">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-sm"
+                                style="background:var(--psf-danger-bg);color:var(--psf-danger);
+                                       border:none;padding:0.25rem 0.6rem;border-radius:var(--radius-sm);
+                                       font-size:0.75rem;"
+                                title="حذف">
+                          <i class="bi bi-trash3-fill"></i>
+                        </button>
+                      </form>
+                      {% else %}
+                      <span class="btn btn-sm"
+                            style="background:var(--psf-gray-100);color:var(--psf-gray-400);
+                                   border:none;padding:0.25rem 0.6rem;border-radius:var(--radius-sm);
+                                   font-size:0.75rem;cursor:not-allowed;"
+                            title="لا يمكن الحذف — يحتوي على تكوينات">
+                        <i class="bi bi-trash3"></i>
+                      </span>
+                      {% endif %}
+                    </div>
+                  </td>
+                </tr>
+                {% else %}
+                <tr>
+                  <td colspan="6" class="text-center py-4 text-muted">لا توجد تصنيفات بعد.</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

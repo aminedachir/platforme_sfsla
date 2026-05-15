@@ -9,7 +9,9 @@ from flask import Flask
 from flask_login import current_user
 from config.settings import config
 from app.extensions import db, login_manager, migrate, mail
+from flask_wtf.csrf import CSRFProtect
 
+csrf = CSRFProtect()
 
 def create_app(config_name: str = None) -> Flask:
     config_name = config_name or os.environ.get("FLASK_ENV", "development")
@@ -22,6 +24,7 @@ def create_app(config_name: str = None) -> Flask:
     login_manager.init_app(app)
     migrate.init_app(app, db)
     mail.init_app(app)
+    csrf.init_app(app)
 
     # Register blueprints
     from app.main.routes import main_bp
