@@ -1,0 +1,454 @@
+{% extends 'base.html' %}
+
+{% block title %}اتصل بنا{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ══════════════════════════════════════════════
+   CONTACT PAGE — PSFSLA
+   ══════════════════════════════════════════════ */
+
+.contact-hero {
+  background: linear-gradient(135deg, #0D1529 0%, #1B2A52 50%, #2A3E80 100%);
+  padding: 3rem 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.contact-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+.contact-hero h1 {
+  color: #fff;
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
+  font-weight: 900;
+  margin-bottom: 0.5rem;
+}
+
+.contact-hero p {
+  color: rgba(255,255,255,0.7);
+  font-size: 1rem;
+  max-width: 600px;
+}
+
+/* ── Contact Layout ───────────────────────────── */
+.contact-section {
+  padding: 4rem 0;
+  background: #F8F9FC;
+}
+
+.contact-info-card {
+  background: #fff;
+  border-radius: 20px;
+  border: 1px solid #E5E7EB;
+  padding: 1.75rem;
+  height: 100%;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.contact-info-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 30px rgba(27,42,82,0.1);
+}
+
+.info-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #1B2A52, #2A3E80);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+}
+
+.info-icon i {
+  font-size: 1.5rem;
+  color: #F0B429;
+}
+
+.info-title {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #1B2A52;
+  margin-bottom: 0.5rem;
+}
+
+.info-text {
+  font-size: 0.88rem;
+  color: #6B7280;
+  line-height: 1.7;
+  margin-bottom: 0;
+}
+
+.info-text a {
+  color: #1B2A52;
+  text-decoration: none;
+}
+
+.info-text a:hover {
+  color: #F0B429;
+}
+
+/* ── Contact Form ─────────────────────────────── */
+.form-card {
+  background: #fff;
+  border-radius: 24px;
+  border: 1px solid #E5E7EB;
+  padding: 2rem;
+  box-shadow: 0 4px 20px rgba(27,42,82,0.08);
+}
+
+.form-card h3 {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #1B2A52;
+  margin-bottom: 0.5rem;
+}
+
+.form-card .form-subtitle {
+  font-size: 0.85rem;
+  color: #6B7280;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #F0B429;
+  display: inline-block;
+}
+
+.form-group {
+  margin-bottom: 1.25rem;
+}
+
+.form-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.4rem;
+  display: block;
+}
+
+.form-label .required {
+  color: #DC2626;
+  margin-right: 0.2rem;
+}
+
+.form-control-custom {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1.5px solid #E5E7EB;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+  background: #fff;
+}
+
+.form-control-custom:focus {
+  outline: none;
+  border-color: #1B2A52;
+  box-shadow: 0 0 0 3px rgba(27,42,82,0.1);
+}
+
+textarea.form-control-custom {
+  resize: vertical;
+  min-height: 120px;
+}
+
+.btn-submit {
+  width: 100%;
+  padding: 0.85rem;
+  background: #1B2A52;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-submit:hover {
+  background: #2A3E80;
+  transform: translateY(-2px);
+}
+
+.btn-submit i {
+  margin-left: 0.5rem;
+}
+
+.map-container {
+  margin-top: 3rem;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid #E5E7EB;
+}
+
+.map-container iframe {
+  width: 100%;
+  height: 300px;
+  display: block;
+}
+
+.success-alert {
+  background: #DCFCE7;
+  border: 1px solid #BBF7D0;
+  color: #166534;
+  padding: 1rem;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.success-alert i {
+  font-size: 1.2rem;
+}
+
+.error-alert {
+  background: #FEE2E2;
+  border: 1px solid #FECACA;
+  color: #991B1B;
+  padding: 1rem;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* ── Social Links ────────────────────────────── */
+.social-links {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.social-link {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: #F3F4F6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #1B2A52;
+  font-size: 1.2rem;
+  transition: all 0.2s;
+  text-decoration: none;
+}
+
+.social-link:hover {
+  background: #1B2A52;
+  color: #F0B429;
+  transform: translateY(-3px);
+}
+
+/* ── Responsive ───────────────────────────────── */
+@media (max-width: 768px) {
+  .contact-section {
+    padding: 2.5rem 0;
+  }
+  .form-card {
+    padding: 1.5rem;
+    margin-top: 1.5rem;
+  }
+  .contact-info-card {
+    margin-bottom: 1rem;
+  }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Hero Section -->
+<section class="contact-hero">
+  <div class="container">
+    <div class="row justify-content-center text-center">
+      <div class="col-lg-8">
+        <h1>
+          <i class="bi bi-chat-dots-fill me-2" style="color: #F0B429;"></i>
+          تواصل معنا
+        </h1>
+        <p>
+          لديك سؤال أو استفسار؟ فريقنا هنا لمساعدتك. تواصل معنا عبر أي من القنوات التالية
+          أو املأ النموذج وسنرد عليك في أقرب وقت.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Contact Section -->
+<section class="contact-section">
+  <div class="container">
+    
+    <div class="row g-4">
+      
+      <!-- Contact Info Cards -->
+      <div class="col-lg-4">
+        <div class="contact-info-card">
+          <div class="info-icon">
+            <i class="bi bi-geo-alt-fill"></i>
+          </div>
+          <h3 class="info-title">العنوان</h3>
+          <p class="info-text">
+            الجزائر العاصمة، الجزائر<br>
+            جامعة الجزائر 1 - بن يوسف بن خدة<br>
+            كلية علوم المعلومات والاتصال
+          </p>
+        </div>
+      </div>
+      
+      <div class="col-lg-4">
+        <div class="contact-info-card">
+          <div class="info-icon">
+            <i class="bi bi-envelope-fill"></i>
+          </div>
+          <h3 class="info-title">البريد الإلكتروني</h3>
+          <p class="info-text">
+            <a href="mailto:contact@psfsla.dz">contact@psfsla.dz</a><br>
+            <a href="mailto:support@psfsla.dz">support@psfsla.dz</a>
+          </p>
+        </div>
+      </div>
+      
+      <div class="col-lg-4">
+        <div class="contact-info-card">
+          <div class="info-icon">
+            <i class="bi bi-telephone-fill"></i>
+          </div>
+          <h3 class="info-title">الهاتف</h3>
+          <p class="info-text">
+            <a href="tel:+213555555555">+213 55 55 55 55</a><br>
+            <span style="font-size:0.8rem;">السبت - الخميس: 09:00 - 17:00</span>
+          </p>
+        </div>
+      </div>
+      
+    </div>
+    
+    <div class="row g-4 mt-2">
+      
+      <!-- Contact Form -->
+      <div class="col-lg-7">
+        <div class="form-card">
+          <h3>أرسل لنا رسالة</h3>
+          <div class="form-subtitle">نسعد بملاحظاتك واستفساراتك</div>
+          
+          {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+              {% for category, message in messages %}
+                <div class="{% if category == 'success' %}success-alert{% else %}error-alert{% endif %}">
+                  <i class="bi bi-{% if category == 'success' %}check-circle-fill{% else %}exclamation-triangle-fill{% endif %}"></i>
+                  {{ message }}
+                </div>
+              {% endfor %}
+            {% endif %}
+          {% endwith %}
+          
+          <form method="POST" action="{{ url_for('main.contact') }}">
+            {{ form.hidden_tag() if form else '' }}
+            
+            <div class="row g-3">
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label class="form-label">الاسم الكامل <span class="required">*</span></label>
+                  <input type="text" name="name" class="form-control-custom" 
+                         placeholder="أدخل اسمك" required>
+                </div>
+              </div>
+              
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label class="form-label">البريد الإلكتروني <span class="required">*</span></label>
+                  <input type="email" name="email" class="form-control-custom" 
+                         placeholder="example@email.com" required>
+                </div>
+              </div>
+              
+              <div class="col-md-12">
+                <div class="form-group">
+                  <label class="form-label">الموضوع <span class="required">*</span></label>
+                  <input type="text" name="subject" class="form-control-custom" 
+                         placeholder="موضوع الرسالة" required>
+                </div>
+              </div>
+              
+              <div class="col-md-12">
+                <div class="form-group">
+                  <label class="form-label">الرسالة <span class="required">*</span></label>
+                  <textarea name="message" class="form-control-custom" 
+                            placeholder="اكتب رسالتك هنا..." required></textarea>
+                </div>
+              </div>
+              
+              <div class="col-md-12">
+                <button type="submit" class="btn-submit">
+                  إرسال الرسالة <i class="bi bi-send-fill"></i>
+                </button>
+              </div>
+            </div>
+          </form>
+          
+          <div class="social-links">
+            <a href="#" class="social-link"><i class="bi bi-facebook"></i></a>
+            <a href="#" class="social-link"><i class="bi bi-twitter-x"></i></a>
+            <a href="#" class="social-link"><i class="bi bi-linkedin"></i></a>
+            <a href="#" class="social-link"><i class="bi bi-instagram"></i></a>
+            <a href="#" class="social-link"><i class="bi bi-youtube"></i></a>
+          </div>
+        </div>
+      </div>
+      
+      <!-- FAQ / Quick info -->
+      <div class="col-lg-5">
+        <div class="contact-info-card" style="background: linear-gradient(135deg, #1B2A52, #2A3E80); color: #fff;">
+          <div class="info-icon" style="background: rgba(255,255,255,0.15);">
+            <i class="bi bi-question-circle-fill" style="color: #F0B429;"></i>
+          </div>
+          <h3 class="info-title" style="color: #fff;">أسئلة شائعة</h3>
+          <div style="margin-top: 1rem;">
+            <div style="margin-bottom: 1rem;">
+              <div style="font-weight: 700; color: #F0B429;">كيف يمكنني التسجيل؟</div>
+              <p style="font-size: 0.85rem; color: rgba(255,255,255,0.7); margin-top: 0.3rem;">
+                اضغط على "إنشاء حساب" في أعلى الصفحة، املأ البيانات وابدأ التعلم فوراً.
+              </p>
+            </div>
+            <div style="margin-bottom: 1rem;">
+              <div style="font-weight: 700; color: #F0B429;">هل الشهادات معتمدة؟</div>
+              <p style="font-size: 0.85rem; color: rgba(255,255,255,0.7); margin-top: 0.3rem;">
+                نعم، جميع الشهادات صادرة من منصة PSFSLA ويمكن التحقق منها عبر الرابط الخاص بكل شهادة.
+              </p>
+            </div>
+            <div style="margin-bottom: 1rem;">
+              <div style="font-weight: 700; color: #F0B429;">ماذا لو واجهت مشكلة تقنية؟</div>
+              <p style="font-size: 0.85rem; color: rgba(255,255,255,0.7); margin-top: 0.3rem;">
+                تواصل معنا عبر هذا النموذج أو أرسل بريداً إلكترونياً وسنرد عليك في أقرب وقت.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+    </div>
+    
+    <!-- Map -->
+    <div class="map-container">
+      <iframe 
+        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3197.123456789!2d3.058756!3d36.753765!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x128fb3d123456789%3A0x123456789abcdef!2sUniversity%20of%20Algiers%20Ben%20Yousef%20Ben%20Khedda!5e0!3m2!1sen!2sdz!4v1234567890123!5m2!1sen!2sdz" 
+        style="border:0;" 
+        allowfullscreen="" 
+        loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade">
+      </iframe>
+    </div>
+    
+  </div>
+</section>
+
+{% endblock %}

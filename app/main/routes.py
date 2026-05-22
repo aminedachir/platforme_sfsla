@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, request, redirect, url_for, flash
 from app.models import Course, Category
 
 main_bp = Blueprint("main", __name__)
@@ -32,8 +32,20 @@ def about():
     
     return render_template("main/about.html", stats=stats, team_members=team_members)
 
-@main_bp.route("/contact")
+@main_bp.route("/contact", methods=["GET", "POST"])
 def contact():
+    if request.method == "POST":
+        name = request.form.get("name")
+        email = request.form.get("email")
+        subject = request.form.get("subject")
+        message = request.form.get("message")
+        
+        # حفظ الرسالة في قاعدة البيانات (اختياري)
+        # أو إرسال بريد إلكتروني للمدير
+        
+        flash("شكراً لتواصلك! سنرد عليك في أقرب وقت.", "success")
+        return redirect(url_for("main.contact"))
+    
     return render_template("main/contact.html")
 
 
