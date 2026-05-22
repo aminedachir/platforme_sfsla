@@ -73,12 +73,9 @@ class User(UserMixin, db.Model):
 
     # Relationships
     roles       = db.relationship("Role", secondary=user_roles, backref="users", lazy="dynamic")
-    enrollments   = db.relationship("Enrollment",        backref="student",   lazy="dynamic",
-                                     cascade="all, delete-orphan", passive_deletes=True)
-    certificates  = db.relationship("Certificate",       backref="holder",    lazy="dynamic",
-                                     cascade="all, delete-orphan", passive_deletes=True)
-    notifications = db.relationship("Notification",      backref="recipient", lazy="dynamic",
-                                     cascade="all, delete-orphan", passive_deletes=True)
+    enrollments = db.relationship("Enrollment", backref="student", lazy="dynamic")
+    certificates = db.relationship("Certificate", backref="holder", lazy="dynamic")
+    notifications = db.relationship("Notification", backref="recipient", lazy="dynamic")
     courses_taught = db.relationship("Course", backref="professor", lazy="dynamic",
                                      foreign_keys="Course.professor_id")
 
@@ -173,7 +170,8 @@ class Course(db.Model):
                                     cascade="all, delete-orphan")
     live_sessions = db.relationship("LiveSession", backref="course", lazy="dynamic",
                                     cascade="all, delete-orphan")
-    certificates  = db.relationship("Certificate", backref="course", lazy="dynamic")
+    certificates  = db.relationship("Certificate", backref="course", lazy="dynamic",
+                                    cascade="all, delete-orphan", passive_deletes=True)
 
     @property
     def enrollment_count(self):
@@ -199,7 +197,7 @@ class Resource(db.Model):
     order       = db.Column(db.Integer, default=0)
     is_public   = db.Column(db.Boolean, default=False)      # visible before enrollment?
 
-    course_id   = db.Column(db.Integer, db.ForeignKey("courses.id"), nullable=False)
+    course_id   = db.Column(db.Integer, db.ForeignKey("courses.id", ondelete="CASCADE"), nullable=False)
     created_at  = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     def __repr__(self):
@@ -215,7 +213,7 @@ class Enrollment(db.Model):
 
     id          = db.Column(db.Integer, primary_key=True)
     student_id  = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    course_id   = db.Column(db.Integer, db.ForeignKey("courses.id"), nullable=False)
+    course_id   = db.Column(db.Integer, db.ForeignKey("courses.id", ondelete="CASCADE"), nullable=False)
     status      = db.Column(db.String(32), default="active")  # active | completed | suspended
     progress    = db.Column(db.Float, default=0.0)             # 0.0 – 100.0 percent
     enrolled_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
@@ -250,7 +248,7 @@ class LiveSession(db.Model):
     recording_url = db.Column(db.String(512))
     status       = db.Column(db.String(32), default="scheduled")  # scheduled | live | ended
 
-    course_id    = db.Column(db.Integer, db.ForeignKey("courses.id"), nullable=False)
+    course_id    = db.Column(db.Integer, db.ForeignKey("courses.id", ondelete="CASCADE"), nullable=False)
     created_at   = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     def __repr__(self):
@@ -267,7 +265,7 @@ class Certificate(db.Model):
     id              = db.Column(db.Integer, primary_key=True)
     certificate_id  = db.Column(db.String(64), unique=True, nullable=False)  # e.g. PSFSLA-2024-00001
     student_id      = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    course_id       = db.Column(db.Integer, db.ForeignKey("courses.id"), nullable=False)
+    course_id       = db.Column(db.Integer, db.ForeignKey("courses.id", ondelete="CASCADE"), nullable=False)
     issued_at       = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     file_path       = db.Column(db.String(512))    # path to generated PDF
     is_valid        = db.Column(db.Boolean, default=True)
@@ -307,7 +305,7 @@ class CompletedResource(db.Model):
     id          = db.Column(db.Integer, primary_key=True)
     student_id  = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     resource_id = db.Column(db.Integer, db.ForeignKey("resources.id"), nullable=False)
-    course_id   = db.Column(db.Integer, db.ForeignKey("courses.id"), nullable=False, index=True)
+    course_id   = db.Column(db.Integer, db.ForeignKey("courses.id", ondelete="CASCADE"), nullable=False, index=True)
     completed_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     # العلاقات
@@ -335,7 +333,7 @@ class AttendedSession(db.Model):
     id          = db.Column(db.Integer, primary_key=True)
     student_id  = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     session_id  = db.Column(db.Integer, db.ForeignKey("live_sessions.id"), nullable=False)
-    course_id   = db.Column(db.Integer, db.ForeignKey("courses.id"), nullable=False, index=True)
+    course_id   = db.Column(db.Integer, db.ForeignKey("courses.id", ondelete="CASCADE"), nullable=False, index=True)
     attended_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     # العلاقات
