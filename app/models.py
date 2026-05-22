@@ -270,6 +270,10 @@ class Certificate(db.Model):
     file_path       = db.Column(db.String(512))    # path to generated PDF
     is_valid        = db.Column(db.Boolean, default=True)
 
+    # Explicit relationships (backref 'holder' comes from User, 'course' from Course)
+    user            = db.relationship("User",   foreign_keys=[student_id], lazy="joined")
+    course_rel      = db.relationship("Course", foreign_keys=[course_id],  lazy="joined")
+
     def __repr__(self):
         return f"<Certificate {self.certificate_id}>"
 

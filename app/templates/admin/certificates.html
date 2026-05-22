@@ -108,8 +108,8 @@
                 </div>
               </td>
               <td>
-                <div style="font-size:0.85rem;font-weight:600;">{{ cert.course.title_ar }}</div>
-                <div style="font-size:0.72rem;color:var(--color-text-muted);">{{ cert.course.title_fr }}</div>
+                <div style="font-size:0.85rem;font-weight:600;">{{ cert.course_rel.title_ar }}</div>
+                <div style="font-size:0.72rem;color:var(--color-text-muted);">{{ cert.course_rel.title_fr }}</div>
               </td>
               <td style="font-size:0.82rem;color:var(--color-text-muted);">
                 {{ cert.issued_at.strftime('%Y/%m/%d') if cert.issued_at else '—' }}
