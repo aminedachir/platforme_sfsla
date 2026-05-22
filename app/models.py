@@ -3,7 +3,8 @@ app/models.py
 -------------
 All SQLAlchemy models for PSFSLA.
 Tables: User, Role, Category, Course, Resource, Enrollment,
-        LiveSession, Certificate, Notification, Progress
+        LiveSession, Certificate, Notification, Progress,
+        CompletedResource, AttendedSession          ← جديد
 """
 
 from datetime import datetime, timezone
@@ -290,3 +291,59 @@ class Notification(db.Model):
 
     def __repr__(self):
         return f"<Notification for user={self.user_id}: {self.title}>"
+
+
+# ──────────────────────────────────────────────────────────────
+#  CompletedResource  ← جديد
+#  يسجّل أن طالباً معيناً قد أكمل مورداً معيناً في مساق معين.
+# ──────────────────────────────────────────────────────────────
+
+class CompletedResource(db.Model):
+    __tablename__ = "completed_resources"
+
+    id          = db.Column(db.Integer, primary_key=True)
+    student_id  = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False, index=True)
+    resource_id = db.Column(db.Integer, db.ForeignKey("resources.id"), nullable=False)
+    course_id   = db.Column(db.Integer, db.ForeignKey("courses.id"), nullable=False, index=True)
+    completed_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+    # العلاقات
+    student  = db.relationship("User",     foreign_keys=[student_id])
+    resource = db.relationship("Resource", foreign_keys=[resource_id])
+    course   = db.relationship("Course",   foreign_keys=[course_id])
+
+    __table_args__ = (
+        # طالب لا يمكنه إكمال نفس المورد مرتين
+        db.UniqueConstraint("student_id", "resource_id", name="uq_completed_resource"),
+    )
+
+    def __repr__(self):
+        return f"<CompletedResource student={self.student_id} resource={self.resource_id}>"
+
+
+# ──────────────────────────────────────────────────────────────
+#  AttendedSession  ← جديد
+#  يسجّل أن طالباً حضر جلسة مباشرة معينة.
+# ──────────────────────────────────────────────────────────────
+
+class AttendedSession(db.Model):
+    __tablename__ = "attended_sessions"
+
+    id          = db.Column(db.Integer, primary_key=True)
+    student_id  = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False, index=True)
+    session_id  = db.Column(db.Integer, db.ForeignKey("live_sessions.id"), nullable=False)
+    course_id   = db.Column(db.Integer, db.ForeignKey("courses.id"), nullable=False, index=True)
+    attended_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+    # العلاقات
+    student = db.relationship("User",        foreign_keys=[student_id])
+    session = db.relationship("LiveSession", foreign_keys=[session_id])
+    course  = db.relationship("Course",      foreign_keys=[course_id])
+
+    __table_args__ = (
+        # طالب لا يمكنه تسجيل حضور نفس الجلسة مرتين
+        db.UniqueConstraint("student_id", "session_id", name="uq_attended_session"),
+    )
+
+    def __repr__(self):
+        return f"<AttendedSession student={self.student_id} session={self.session_id}>"

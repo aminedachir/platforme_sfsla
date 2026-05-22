@@ -477,6 +477,76 @@ body.ltr .resource-item:hover { transform: translateX(3px); }
 
 .panel-empty i { font-size: 2.5rem; margin-bottom: 0.75rem; display: block; }
 .panel-empty p { color: var(--psf-gray-400); font-size: 0.88rem; margin: 0; }
+
+/* ── أزرار إكمال المورد وتسجيل الحضور ────────────────────── */
+.btn-complete-res {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.3rem 0.7rem;
+  border-radius: var(--radius-full);
+  border: 1.5px solid var(--psf-navy-300);
+  background: var(--psf-navy-50);
+  color: var(--psf-navy-700);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: var(--transition);
+}
+
+.btn-complete-res:hover {
+  background: var(--psf-navy-700);
+  color: #fff;
+  border-color: var(--psf-navy-700);
+  transform: scale(1.04);
+}
+
+.btn-attend-session {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0.35rem 0.85rem;
+  border-radius: var(--radius-full);
+  border: 1.5px solid #16a34a;
+  background: #f0fdf4;
+  color: #15803d;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: var(--transition);
+}
+
+.btn-attend-session:hover {
+  background: #16a34a;
+  color: #fff;
+  transform: scale(1.04);
+}
+
+/* شارة "تم" */
+.badge-done {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.22rem 0.6rem;
+  border-radius: var(--radius-full);
+  background: #dcfce7;
+  color: #15803d;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* مورد مكتمل: خلفية خضراء خفيفة */
+.resource-done {
+  background: #f0fdf4 !important;
+  border-color: #bbf7d0 !important;
+}
+
+/* جلسة محضورة: حدود خضراء */
+.session-attended {
+  border-color: #86efac !important;
+  background: #f0fdf4 !important;
+}
 </style>
 {% endblock %}
 
@@ -513,6 +583,18 @@ body.ltr .resource-item:hover { transform: translateX(3px); }
 {% set platform_icons = {'zoom': 'bi-camera-video-fill', 'teams': 'bi-microsoft-teams', 'google_meet': 'bi-camera-video'} %}
 {% set res_classes = {'pdf': 'res-pdf', 'video': 'res-video', 'link': 'res-link', 'slide': 'res-slide'} %}
 {% set res_icons   = {'pdf': 'bi-file-earmark-pdf', 'video': 'bi-play-circle', 'link': 'bi-link-45deg', 'slide': 'bi-easel'} %}
+
+{# ─── مجموعة الموارد المكتملة والجلسات المحضورة ────────────── #}
+{% set completed_resource_ids = [] %}
+{% set attended_session_ids   = [] %}
+{% if is_enrolled and current_user.is_authenticated %}
+  {% for cr in completed_resources %}
+    {% if completed_resource_ids.append(cr.resource_id) %}{% endif %}
+  {% endfor %}
+  {% for att in attended_sessions %}
+    {% if attended_session_ids.append(att.session_id) %}{% endif %}
+  {% endfor %}
+{% endif %}
 
 
 <!-- ══════════════ COURSE HERO ══════════════ -->
@@ -698,14 +780,19 @@ body.ltr .resource-item:hover { transform: translateX(3px); }
             {% if resources %}
               {% for res in resources %}
               {% set can_access = is_enrolled or res.is_public %}
+              {% set is_done = res.id in completed_resource_ids %}
 
-              <div class="resource-item {% if not can_access %}opacity-75{% endif %}"
+              <div class="resource-item {% if not can_access %}opacity-75{% endif %} {% if is_done %}resource-done{% endif %}"
                    {% if can_access and (res.url or res.file_path) %}
                    onclick="window.open('{{ res.url or url_for('static', filename='uploads/' + res.file_path) }}', '_blank')"
                    {% endif %}>
 
                 <div class="resource-icon {{ res_classes.get(res.type, 'res-other') }}">
+                  {% if is_done %}
+                  <i class="bi bi-check-circle-fill" style="color:var(--psf-success);"></i>
+                  {% else %}
                   <i class="bi {{ res_icons.get(res.type, 'bi-file-earmark') }}"></i>
+                  {% endif %}
                 </div>
 
                 <div class="resource-info">
@@ -717,6 +804,25 @@ body.ltr .resource-item:hover { transform: translateX(3px); }
 
                 {% if not can_access %}
                 <i class="bi bi-lock-fill resource-lock" title="يتطلب التسجيل"></i>
+
+                {% elif is_done %}
+                {# ── مكتمل: شارة خضراء ── #}
+                <span class="badge-done">
+                  <i class="bi bi-check-lg me-1"></i>تم
+                </span>
+
+                {% elif is_enrolled %}
+                {# ── زر إكمال المورد ── #}
+                <form action="{{ url_for('student.complete_resource', resource_id=res.id) }}"
+                      method="post"
+                      onclick="event.stopPropagation();">
+                  <input type="hidden" name="csrf_token"
+                         value="{{ csrf_token() if csrf_token is defined else '' }}">
+                  <button type="submit" class="btn-complete-res" title="تسجيل كمكتمل">
+                    <i class="bi bi-check-circle me-1"></i>تم الإكمال
+                  </button>
+                </form>
+
                 {% elif res.url or res.file_path %}
                 <i class="bi bi-box-arrow-up-left resource-open"></i>
                 {% endif %}
@@ -749,15 +855,23 @@ body.ltr .resource-item:hover { transform: translateX(3px); }
             {% set sessions = course.live_sessions.order_by('scheduled_at').all() %}
             {% if sessions %}
               {% for s in sessions %}
-              <div class="session-card">
+              {% set is_attended = s.id in attended_session_ids %}
+              <div class="session-card {% if is_attended %}session-attended{% endif %}">
                 <div class="d-flex align-items-start justify-content-between gap-2 mb-2">
                   <div class="s-title">{{ s.title }}</div>
-                  <span class="session-status s-{{ s.status }}">
-                    {% if s.status == 'live' %}مباشر
-                    {% elif s.status == 'scheduled' %}مجدولة
-                    {% else %}انتهت
+                  <div class="d-flex align-items-center gap-2">
+                    {% if is_attended %}
+                    <span class="badge-done">
+                      <i class="bi bi-person-check-fill me-1"></i>حضرت
+                    </span>
                     {% endif %}
-                  </span>
+                    <span class="session-status s-{{ s.status }}">
+                      {% if s.status == 'live' %}مباشر
+                      {% elif s.status == 'scheduled' %}مجدولة
+                      {% else %}انتهت
+                      {% endif %}
+                    </span>
+                  </div>
                 </div>
 
                 {% if s.description %}
@@ -785,21 +899,35 @@ body.ltr .resource-item:hover { transform: translateX(3px); }
                   </span>
                 </div>
 
-                {% if is_enrolled and s.meeting_url and s.status != 'ended' %}
-                <a href="{{ s.meeting_url }}" target="_blank" rel="noopener"
-                   class="btn-psf-primary d-inline-flex align-items-center gap-2 mt-2"
-                   style="font-size:0.82rem;padding:0.4rem 0.9rem;">
-                  <i class="bi bi-box-arrow-up-left"></i> انضم إلى الجلسة
-                </a>
-                {% endif %}
+                <div class="d-flex flex-wrap align-items-center gap-2 mt-2">
+                  {% if is_enrolled and s.meeting_url and s.status != 'ended' %}
+                  <a href="{{ s.meeting_url }}" target="_blank" rel="noopener"
+                     class="btn-psf-primary d-inline-flex align-items-center gap-2"
+                     style="font-size:0.82rem;padding:0.4rem 0.9rem;">
+                    <i class="bi bi-box-arrow-up-left"></i> انضم إلى الجلسة
+                  </a>
+                  {% endif %}
 
-                {% if s.is_recorded and s.recording_url and is_enrolled %}
-                <a href="{{ s.recording_url }}" target="_blank" rel="noopener"
-                   class="btn-psf-outline d-inline-flex align-items-center gap-2 mt-2 ms-2"
-                   style="font-size:0.82rem;padding:0.38rem 0.85rem;">
-                  <i class="bi bi-play-circle"></i> مشاهدة التسجيل
-                </a>
-                {% endif %}
+                  {% if s.is_recorded and s.recording_url and is_enrolled %}
+                  <a href="{{ s.recording_url }}" target="_blank" rel="noopener"
+                     class="btn-psf-outline d-inline-flex align-items-center gap-2"
+                     style="font-size:0.82rem;padding:0.38rem 0.85rem;">
+                    <i class="bi bi-play-circle"></i> مشاهدة التسجيل
+                  </a>
+                  {% endif %}
+
+                  {# ── زر تسجيل الحضور (للطلاب المسجلين فقط، وغير المحضورين) ── #}
+                  {% if is_enrolled and not is_attended and enrollment.status != 'completed' %}
+                  <form action="{{ url_for('student.attend_session', session_id=s.id) }}"
+                        method="post">
+                    <input type="hidden" name="csrf_token"
+                           value="{{ csrf_token() if csrf_token is defined else '' }}">
+                    <button type="submit" class="btn-attend-session">
+                      <i class="bi bi-person-check me-1"></i>حضرت
+                    </button>
+                  </form>
+                  {% endif %}
+                </div>
               </div>
               {% endfor %}
 

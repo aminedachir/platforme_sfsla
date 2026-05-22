@@ -2,7 +2,9 @@ from flask import (Blueprint, render_template, redirect, url_for,
                    flash, abort, request, current_app, send_file, Response)
 from flask_login import login_required, current_user
 from app.extensions import db
-from app.models import Course, Enrollment, Certificate, Notification, LiveSession
+from app.models import (Course, Enrollment, Certificate, Notification,
+                        LiveSession, Resource,
+                        CompletedResource, AttendedSession)   # ← جديد
 from datetime import datetime, timezone
 import io
 import os
@@ -93,8 +95,9 @@ def enroll(course_id):
         flash(f"تم التسجيل في «{course.title_ar}» بنجاح!", "success")
     return redirect(url_for("courses.detail", course_id=course_id))
 
+
 # ─────────────────────────────────────────────────────────────────────────────
-#  Update Progress
+#  Update Progress  (يدوي – يبقى للتوافق مع الكود القديم)
 # ─────────────────────────────────────────────────────────────────────────────
 @student_bp.route("/update-progress/<int:course_id>", methods=["POST"])
 @login_required
@@ -112,11 +115,162 @@ def update_progress(course_id):
     progress = max(0.0, min(100.0, progress))
     enrollment.progress = progress
 
-    # فقط تحديث النسبة — لا تغيير الـ status هنا
-    # الـ status يتغير فقط عبر زر "إصدار الشهادة" في complete_course
     db.session.commit()
     flash(f"تم تحديث تقدمك إلى {progress:.0f}%.", "info")
     return redirect(url_for("courses.detail", course_id=course_id))
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  ★ Complete Resource  ← جديد
+#  POST /complete-resource/<resource_id>
+#  يكمل الطالب مورداً → يحسب التقدم تلقائياً → يُصدر شهادة إن بلغ 100%
+# ─────────────────────────────────────────────────────────────────────────────
+@student_bp.route("/complete-resource/<int:resource_id>", methods=["POST"])
+@login_required
+def complete_resource(resource_id):
+    resource = Resource.query.get_or_404(resource_id)
+    course_id = resource.course_id
+
+    # التحقق من التسجيل
+    enrollment = Enrollment.query.filter_by(
+        student_id=current_user.id,
+        course_id=course_id,
+    ).first_or_404()
+
+    if enrollment.status == "completed":
+        flash("لقد أتممت هذا التكوين مسبقاً.", "info")
+        return redirect(url_for("courses.detail", course_id=course_id))
+
+    # تسجيل الإكمال إذا لم يكن موجوداً
+    existing = CompletedResource.query.filter_by(
+        student_id=current_user.id,
+        resource_id=resource_id,
+    ).first()
+
+    if not existing:
+        db.session.add(CompletedResource(
+            student_id=current_user.id,
+            resource_id=resource_id,
+            course_id=course_id,
+        ))
+        db.session.flush()   # احصل على الـ id قبل الحساب
+
+    # ── إعادة حساب التقدم تلقائياً ───────────────────────────
+    from app.utils.progress import sync_enrollment_progress
+    new_progress = sync_enrollment_progress(current_user.id, course_id)
+    db.session.commit()
+
+    flash(f"✓ تم تسجيل إكمال «{resource.title}» — تقدمك الآن {new_progress:.0f}%.", "success")
+
+    # ── إصدار شهادة تلقائي عند بلوغ 100% ────────────────────
+    if new_progress >= 100.0:
+        _auto_issue_certificate(enrollment, course_id)
+
+    return redirect(url_for("courses.detail", course_id=course_id))
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  ★ Attend Session  ← جديد
+#  POST /attend-session/<session_id>
+#  يسجّل حضور الطالب لجلسة مباشرة → يحسب التقدم تلقائياً
+# ─────────────────────────────────────────────────────────────────────────────
+@student_bp.route("/attend-session/<int:session_id>", methods=["POST"])
+@login_required
+def attend_session(session_id):
+    session = LiveSession.query.get_or_404(session_id)
+    course_id = session.course_id
+
+    # التحقق من التسجيل
+    enrollment = Enrollment.query.filter_by(
+        student_id=current_user.id,
+        course_id=course_id,
+    ).first_or_404()
+
+    if enrollment.status == "completed":
+        flash("لقد أتممت هذا التكوين مسبقاً.", "info")
+        return redirect(url_for("courses.detail", course_id=course_id))
+
+    # تسجيل الحضور إذا لم يكن موجوداً
+    existing = AttendedSession.query.filter_by(
+        student_id=current_user.id,
+        session_id=session_id,
+    ).first()
+
+    if existing:
+        flash("لقد سجّلت حضورك في هذه الجلسة مسبقاً.", "info")
+        return redirect(url_for("courses.detail", course_id=course_id))
+
+    db.session.add(AttendedSession(
+        student_id=current_user.id,
+        session_id=session_id,
+        course_id=course_id,
+    ))
+    db.session.flush()
+
+    # ── إعادة حساب التقدم تلقائياً ───────────────────────────
+    from app.utils.progress import sync_enrollment_progress
+    new_progress = sync_enrollment_progress(current_user.id, course_id)
+    db.session.commit()
+
+    flash(f"✓ تم تسجيل حضورك في «{session.title}» — تقدمك الآن {new_progress:.0f}%.", "success")
+
+    # ── إصدار شهادة تلقائي عند بلوغ 100% ────────────────────
+    if new_progress >= 100.0:
+        _auto_issue_certificate(enrollment, course_id)
+
+    return redirect(url_for("courses.detail", course_id=course_id))
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  دالة مساعدة داخلية: إصدار الشهادة تلقائياً
+# ─────────────────────────────────────────────────────────────────────────────
+def _auto_issue_certificate(enrollment: Enrollment, course_id: int) -> None:
+    """
+    تُصدر الشهادة تلقائياً عند وصول التقدم إلى 100%.
+    لا تُصدر إذا كانت الشهادة موجودة مسبقاً.
+    تستدعي db.session.commit() بمفردها.
+    """
+    # تأكد أن الشهادة غير موجودة
+    existing_cert = Certificate.query.filter_by(
+        student_id=enrollment.student_id,
+        course_id=course_id,
+    ).first()
+    if existing_cert:
+        return
+
+    # ── تحديث حالة التسجيل ───────────────────────────────────
+    enrollment.status       = "completed"
+    enrollment.completed_at = datetime.now(timezone.utc)
+
+    # ── توليد الشهادة ─────────────────────────────────────────
+    from app.utils.certificate import issue_certificate
+
+    save_dir = current_app.config.get(
+        "CERT_FOLDER",
+        os.path.join(current_app.static_folder, "certificates"),
+    )
+    os.makedirs(save_dir, exist_ok=True)
+    base_url = request.host_url.rstrip("/")
+
+    cert = issue_certificate(enrollment, base_url=base_url, save_dir=save_dir)
+
+    # ── إشعار الطالب ─────────────────────────────────────────
+    db.session.add(Notification(
+        user_id=enrollment.student_id,
+        title="🎓 تهانينا! لقد حصلت على شهادتك",
+        message=(
+            f"تم إصدار شهادة إتمام تكوين «{enrollment.course.title_ar}» "
+            f"برقم {cert.certificate_id} تلقائياً."
+        ),
+        type="success",
+        link=url_for("student.my_certificates"),
+    ))
+
+    db.session.commit()
+    flash(
+        f"🎓 تهانينا! أتممت التكوين — تم إصدار شهادتك تلقائياً برقم {cert.certificate_id}.",
+        "success",
+    )
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -204,7 +358,6 @@ def download_certificate(cert_id):
         os.path.join(current_app.static_folder, "certificates"),
     )
     if cert.file_path:
-        # file_path stored relative to save_dir parent  (e.g. "certificates/PSFSLA-…pdf")
         abs_path = os.path.join(
             current_app.static_folder,
             cert.file_path.lstrip("/"),
