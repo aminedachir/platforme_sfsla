@@ -484,15 +484,28 @@ body.ltr .resource-item:hover { transform: translateX(3px); }
 
 {# ─── Determine enrollment state ──────────────────────────── #}
 {% set is_enrolled = false %}
-{% set enrollment  = none %}
+{% set enrollment = none %}
 {% if current_user.is_authenticated %}
   {% for enr in current_user.enrollments %}
     {% if enr.course_id == course.id %}
       {% set is_enrolled = true %}
-      {% set enrollment  = enr %}
+      {% set enrollment = enr %}
     {% endif %}
   {% endfor %}
 {% endif %}
+
+{# ─── استخدم namespace للحل الصحيح ───────────────────────── #}
+{% set ns = namespace(is_enrolled=false, enrollment=none) %}
+{% if current_user.is_authenticated %}
+  {% for enr in current_user.enrollments %}
+    {% if enr.course_id == course.id %}
+      {% set ns.is_enrolled = true %}
+      {% set ns.enrollment = enr %}
+    {% endif %}
+  {% endfor %}
+{% endif %}
+{% set is_enrolled = ns.is_enrolled %}
+{% set enrollment = ns.enrollment %}
 
 {# ─── Helpers ─────────────────────────────────────────────── #}
 {% set level_ar = {'debutant': 'مبتدئ', 'intermediaire': 'متوسط', 'avance': 'متقدم'} %}

@@ -49,9 +49,9 @@
           <td>
             <div class="course-cell">
               <div class="course-cell__thumb">
-                <img src="{{ url_for('static', filename='images/uploads/thumbnails/' + course.thumbnail) }}">
-                     alt="{{ course.title_ar }}"
-                     onerror="this.src='{{ url_for('static', filename='img/course_default.png') }}'">
+                <img src="{{ url_for('static', filename='images/uploads/thumbnails/' + course.thumbnail) }}"
+     alt="{{ course.title_ar }}"
+     onerror="this.src='{{ url_for('static', filename='img/course_default.png') }}'">
               </div>
               <div class="course-cell__text">
                 <span class="course-cell__ar">{{ course.title_ar }}</span>
