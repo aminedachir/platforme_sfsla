@@ -1,0 +1,751 @@
+{% extends 'base.html' %}
+
+{% block title %}من نحن{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ══════════════════════════════════════════════
+   ABOUT PAGE — PSFSLA
+   الألوان: navy #1B2A52 · gold #F0B429
+   ══════════════════════════════════════════════ */
+
+/* ── Hero ─────────────────────────────────────── */
+.about-hero {
+  position: relative;
+  background: linear-gradient(140deg, #0d1a36 0%, #1B2A52 55%, #253466 100%);
+  padding: 5rem 0 0;
+  overflow: hidden;
+}
+
+.about-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 50% at 80% 40%, rgba(240,180,41,0.08) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 60% at 10% 80%, rgba(50,80,160,0.3) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+/* شبكة نقطية خلفية */
+.about-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255,255,255,0.04) 1px, transparent 1px);
+  background-size: 28px 28px;
+  pointer-events: none;
+}
+
+.hero-inner {
+  position: relative;
+  z-index: 2;
+}
+
+.hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #F0B429;
+  background: rgba(240,180,41,0.1);
+  border: 1px solid rgba(240,180,41,0.25);
+  padding: 0.35rem 0.9rem;
+  border-radius: 999px;
+  margin-bottom: 1.5rem;
+}
+
+.hero-title {
+  font-size: clamp(2rem, 5vw, 3.4rem);
+  font-weight: 900;
+  color: #fff;
+  line-height: 1.2;
+  margin-bottom: 1.25rem;
+}
+
+.hero-title span {
+  color: #F0B429;
+  position: relative;
+}
+
+.hero-title span::after {
+  content: '';
+  position: absolute;
+  bottom: 2px;
+  right: 0;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #F0B429, transparent);
+  border-radius: 2px;
+}
+
+.hero-subtitle {
+  font-size: 1.05rem;
+  color: rgba(255,255,255,0.65);
+  max-width: 560px;
+  line-height: 1.9;
+  margin-bottom: 2.5rem;
+}
+
+/* ── شريط الإحصائيات داخل الـ hero ─────────────── */
+.stats-ribbon {
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-bottom: none;
+  border-radius: 1rem 1rem 0 0;
+  padding: 2rem 2.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  margin-top: 3rem;
+}
+
+.stat-col {
+  flex: 1;
+  min-width: 140px;
+  text-align: center;
+  padding: 0.5rem 1.5rem;
+  position: relative;
+}
+
+.stat-col + .stat-col::before {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 10%;
+  height: 80%;
+  width: 1px;
+  background: rgba(255,255,255,0.1);
+}
+
+body.ltr .stat-col + .stat-col::before {
+  right: auto;
+  left: 0;
+}
+
+.stat-number {
+  font-size: 2.4rem;
+  font-weight: 900;
+  color: #F0B429;
+  line-height: 1;
+  display: block;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  color: rgba(255,255,255,0.5);
+  font-weight: 600;
+  margin-top: 0.35rem;
+  display: block;
+}
+
+/* ── Layout عام ───────────────────────────────── */
+.about-body {
+  background: #f8f9fc;
+  padding: 4rem 0 5rem;
+}
+
+/* ── Section header ───────────────────────────── */
+.section-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #F0B429;
+  margin-bottom: 0.75rem;
+}
+
+.section-tag i { font-size: 0.85rem; }
+
+.section-title {
+  font-size: clamp(1.4rem, 3vw, 1.9rem);
+  font-weight: 900;
+  color: #1B2A52;
+  line-height: 1.3;
+  margin-bottom: 1rem;
+}
+
+.section-lead {
+  font-size: 0.95rem;
+  color: #5a6480;
+  line-height: 1.85;
+}
+
+/* ── بطاقات الرؤية والرسالة ───────────────────── */
+.vm-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-top: 2.5rem;
+}
+
+@media (max-width: 767px) {
+  .vm-grid { grid-template-columns: 1fr; }
+}
+
+.vm-card {
+  background: #fff;
+  border-radius: 1.1rem;
+  padding: 2rem;
+  border: 1px solid #e8eaf0;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.vm-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 48px rgba(27,42,82,0.1);
+}
+
+.vm-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(180deg, #F0B429, #c8921a);
+  border-radius: 0 1.1rem 1.1rem 0;
+}
+
+body.ltr .vm-card::before {
+  right: auto;
+  left: 0;
+  border-radius: 1.1rem 0 0 1.1rem;
+}
+
+.vm-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 0.8rem;
+  background: linear-gradient(135deg, #1B2A52, #2a3e80);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  color: #F0B429;
+  margin-bottom: 1.1rem;
+  flex-shrink: 0;
+}
+
+.vm-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #1B2A52;
+  margin-bottom: 0.7rem;
+}
+
+.vm-text {
+  font-size: 0.9rem;
+  color: #6b7280;
+  line-height: 1.85;
+}
+
+/* ── قيم المنصة ───────────────────────────────── */
+.values-section {
+  background: linear-gradient(135deg, #1B2A52 0%, #0f1d3a 100%);
+  padding: 4rem 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.values-section::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255,255,255,0.025) 1px, transparent 1px);
+  background-size: 24px 24px;
+  pointer-events: none;
+}
+
+.values-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.25rem;
+  position: relative;
+  z-index: 1;
+}
+
+.value-card {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 1rem;
+  padding: 1.75rem 1.5rem;
+  text-align: center;
+  transition: background 0.3s ease, transform 0.3s ease;
+}
+
+.value-card:hover {
+  background: rgba(240,180,41,0.08);
+  border-color: rgba(240,180,41,0.2);
+  transform: translateY(-3px);
+}
+
+.value-icon {
+  font-size: 2rem;
+  margin-bottom: 0.9rem;
+  display: block;
+  filter: drop-shadow(0 0 8px rgba(240,180,41,0.3));
+}
+
+.value-name {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 0.5rem;
+}
+
+.value-desc {
+  font-size: 0.82rem;
+  color: rgba(255,255,255,0.45);
+  line-height: 1.7;
+}
+
+/* ── الفريق ───────────────────────────────────── */
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2.5rem;
+}
+
+.team-card {
+  background: #fff;
+  border: 1px solid #e8eaf0;
+  border-radius: 1.1rem;
+  padding: 2rem 1.5rem;
+  text-align: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.team-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 56px rgba(27,42,82,0.12);
+}
+
+.team-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  margin: 0 auto 1rem;
+  border: 3px solid #e8eaf0;
+  object-fit: cover;
+  background: linear-gradient(135deg, #1B2A52, #2a3e80);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #F0B429;
+  font-size: 1.8rem;
+  font-weight: 900;
+}
+
+.team-name {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #1B2A52;
+  margin-bottom: 0.25rem;
+}
+
+.team-role {
+  font-size: 0.78rem;
+  color: #F0B429;
+  font-weight: 700;
+  background: rgba(240,180,41,0.1);
+  padding: 0.2rem 0.7rem;
+  border-radius: 999px;
+  display: inline-block;
+  margin-bottom: 0.7rem;
+}
+
+.team-bio {
+  font-size: 0.8rem;
+  color: #9ca3af;
+  line-height: 1.6;
+}
+
+/* ── CTA ──────────────────────────────────────── */
+.about-cta {
+  background: linear-gradient(135deg, #F0B429 0%, #c8921a 100%);
+  border-radius: 1.5rem;
+  padding: 3rem 2.5rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  margin-top: 3rem;
+}
+
+.about-cta::before {
+  content: '';
+  position: absolute;
+  top: -30%;
+  left: -10%;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.08);
+  pointer-events: none;
+}
+
+.about-cta h3 {
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: #1B2A52;
+  margin-bottom: 0.75rem;
+}
+
+.about-cta p {
+  color: rgba(27,42,82,0.7);
+  font-size: 0.95rem;
+  margin-bottom: 1.75rem;
+}
+
+.cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #1B2A52;
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.95rem;
+  padding: 0.85rem 2rem;
+  border-radius: 0.75rem;
+  text-decoration: none;
+  transition: transform 0.25s, box-shadow 0.25s;
+}
+
+.cta-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(27,42,82,0.3);
+  color: #F0B429;
+}
+
+/* ── Responsive ───────────────────────────────── */
+@media (max-width: 575px) {
+  .stats-ribbon {
+    padding: 1.5rem 1rem;
+  }
+  .stat-col + .stat-col::before { display: none; }
+  .stat-col {
+    min-width: 50%;
+    padding: 0.75rem;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .about-cta { padding: 2rem 1.25rem; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ══════════ HERO ══════════ -->
+<section class="about-hero">
+  <div class="container hero-inner">
+    <div class="row align-items-center">
+      <div class="col-lg-7">
+
+        <div class="hero-eyebrow">
+          <i class="bi bi-info-circle-fill"></i>
+          من نحن
+        </div>
+
+        <h1 class="hero-title">
+          منصة <span>PSFSLA</span><br>
+          لتكوين أخصائي المعلومات
+        </h1>
+
+        <p class="hero-subtitle">
+          منصة رقمية جزائرية متخصصة في تأهيل وتدريب أخصائيي المعلومات والمكتبيين،
+          تجمع بين الجودة الأكاديمية والمرونة في التعلم عن بُعد.
+        </p>
+
+        <div class="d-flex flex-wrap gap-3">
+          <a href="{{ url_for('courses.list') }}"
+             class="cta-btn"
+             style="background:#F0B429;color:#1B2A52;">
+            <i class="bi bi-collection-fill"></i>
+            استكشف التكوينات
+          </a>
+          <a href="{{ url_for('main.contact') }}"
+             style="display:inline-flex;align-items:center;gap:.5rem;color:rgba(255,255,255,.75);
+                    font-size:.9rem;font-weight:700;text-decoration:none;
+                    border:1px solid rgba(255,255,255,.2);padding:.75rem 1.5rem;
+                    border-radius:.75rem;transition:.25s;"
+             onmouseover="this.style.background='rgba(255,255,255,.08)'"
+             onmouseout="this.style.background='transparent'">
+            <i class="bi bi-envelope"></i> تواصل معنا
+          </a>
+        </div>
+
+      </div>
+
+      <!-- رسم توضيحي / شعار كبير -->
+      <div class="col-lg-5 d-none d-lg-flex justify-content-center align-items-center">
+        <div style="width:260px;height:260px;border-radius:50%;
+                    background:rgba(240,180,41,0.07);
+                    border:2px solid rgba(240,180,41,0.15);
+                    display:flex;align-items:center;justify-content:center;
+                    position:relative;">
+          <div style="width:200px;height:200px;border-radius:50%;
+                      background:rgba(240,180,41,0.1);
+                      border:2px solid rgba(240,180,41,0.25);
+                      display:flex;align-items:center;justify-content:center;">
+            <i class="bi bi-book-half" style="font-size:5rem;color:#F0B429;
+                      filter:drop-shadow(0 0 24px rgba(240,180,41,0.4));"></i>
+          </div>
+          <!-- حلقات دوّارة -->
+          <div style="position:absolute;inset:-20px;border-radius:50%;
+                      border:1px dashed rgba(240,180,41,0.15);
+                      animation:spin 20s linear infinite;"></div>
+          <div style="position:absolute;inset:-40px;border-radius:50%;
+                      border:1px dashed rgba(255,255,255,0.06);
+                      animation:spin 30s linear infinite reverse;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── إحصائيات ── -->
+    <div class="stats-ribbon" data-aos="fade-up" data-aos-delay="200">
+      <div class="stat-col">
+        <span class="stat-number" data-target="{{ stats.students or 0 }}">0</span>
+        <span class="stat-label"><i class="bi bi-people-fill me-1"></i>طالب مسجّل</span>
+      </div>
+      <div class="stat-col">
+        <span class="stat-number" data-target="{{ stats.professors or 0 }}">0</span>
+        <span class="stat-label"><i class="bi bi-person-workspace me-1"></i>أستاذ متخصص</span>
+      </div>
+      <div class="stat-col">
+        <span class="stat-number" data-target="{{ stats.courses or 0 }}">0</span>
+        <span class="stat-label"><i class="bi bi-collection-fill me-1"></i>تكوين متاح</span>
+      </div>
+      <div class="stat-col">
+        <span class="stat-number" data-target="{{ stats.certificates or 0 }}">0</span>
+        <span class="stat-label"><i class="bi bi-award-fill me-1"></i>شهادة مُصدَرة</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ══════════ BODY ══════════ -->
+<div class="about-body">
+  <div class="container">
+
+    <!-- ── رؤيتنا ورسالتنا ── -->
+    <div class="row align-items-start g-5 mb-5" data-aos="fade-up">
+      <div class="col-lg-4">
+        <div class="section-tag">
+          <i class="bi bi-compass-fill"></i> التوجه الاستراتيجي
+        </div>
+        <h2 class="section-title">رؤيتنا<br>ورسالتنا</h2>
+        <p class="section-lead">
+          نسعى لبناء جيل متكامل من أخصائيي المعلومات الجزائريين القادرين على
+          مواكبة التحولات الرقمية في مجال إدارة المعرفة والمكتبات.
+        </p>
+      </div>
+
+      <div class="col-lg-8">
+        <div class="vm-grid">
+
+          <div class="vm-card" data-aos="fade-up" data-aos-delay="100">
+            <div class="vm-icon"><i class="bi bi-eye-fill"></i></div>
+            <div class="vm-title">رؤيتنا</div>
+            <p class="vm-text">
+              أن نكون المرجع الرقمي الأول في الجزائر لتكوين وتأهيل أخصائيي المعلومات
+              والمكتبيين، وبناء جسور المعرفة بين الأكاديميا وسوق العمل.
+            </p>
+          </div>
+
+          <div class="vm-card" data-aos="fade-up" data-aos-delay="150">
+            <div class="vm-icon"><i class="bi bi-bullseye"></i></div>
+            <div class="vm-title">رسالتنا</div>
+            <p class="vm-text">
+              تقديم برامج تكوينية عالية الجودة عن بُعد، بإشراف أساتذة متخصصين،
+              مع منح شهادات معتمدة تُثري المسار المهني لكل متدرب.
+            </p>
+          </div>
+
+          <div class="vm-card" data-aos="fade-up" data-aos-delay="200">
+            <div class="vm-icon"><i class="bi bi-graph-up-arrow"></i></div>
+            <div class="vm-title">أهدافنا</div>
+            <p class="vm-text">
+              تطوير الكفاءات في علم المكتبات والأرشيف والتوثيق، ودعم الباحثين
+              والعاملين في المؤسسات الوثائقية والمعلوماتية.
+            </p>
+          </div>
+
+          <div class="vm-card" data-aos="fade-up" data-aos-delay="250">
+            <div class="vm-icon"><i class="bi bi-shield-fill-check"></i></div>
+            <div class="vm-title">ضمان الجودة</div>
+            <p class="vm-text">
+              تخضع جميع برامجنا لمعايير جودة صارمة، يشرف عليها فريق أكاديمي متخصص
+              لضمان تجربة تعليمية متميزة لكل متدرب.
+            </p>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ══════════ قيم المنصة ══════════ -->
+<section class="values-section">
+  <div class="container">
+
+    <div class="text-center mb-4 position-relative" style="z-index:1;">
+      <div class="section-tag justify-content-center" style="color:rgba(240,180,41,.8);">
+        <i class="bi bi-stars"></i> ما يميّزنا
+      </div>
+      <h2 class="section-title" style="color:#fff;">قيمنا الأساسية</h2>
+    </div>
+
+    <div class="values-grid">
+
+      <div class="value-card" data-aos="fade-up" data-aos-delay="0">
+        <span class="value-icon">🎓</span>
+        <div class="value-name">الجودة الأكاديمية</div>
+        <p class="value-desc">محتوى علمي رصين يُعدّه أساتذة متخصصون من الجامعات الجزائرية</p>
+      </div>
+
+      <div class="value-card" data-aos="fade-up" data-aos-delay="80">
+        <span class="value-icon">🌐</span>
+        <div class="value-name">التعلم عن بُعد</div>
+        <p class="value-desc">مرونة كاملة في التعلم من أي مكان في الجزائر وخارجها</p>
+      </div>
+
+      <div class="value-card" data-aos="fade-up" data-aos-delay="160">
+        <span class="value-icon">🏅</span>
+        <div class="value-name">شهادات معتمدة</div>
+        <p class="value-desc">شهادات إتمام رسمية تُعزز مسيرتك المهنية في علم المعلومات</p>
+      </div>
+
+      <div class="value-card" data-aos="fade-up" data-aos-delay="240">
+        <span class="value-icon">🤝</span>
+        <div class="value-name">مجتمع الممارسة</div>
+        <p class="value-desc">شبكة من الأخصائيين والمكتبيين الجزائريين للتعاون والتطوير</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════ الفريق ══════════ -->
+<div class="about-body" style="padding-top:3.5rem;padding-bottom:1rem;">
+  <div class="container">
+
+    <div class="text-center mb-2" data-aos="fade-up">
+      <div class="section-tag justify-content-center">
+        <i class="bi bi-people-fill"></i> الكادر البشري
+      </div>
+      <h2 class="section-title">فريق المنصة</h2>
+      <p class="section-lead" style="max-width:500px;margin:0 auto;">
+        يضم فريقنا نخبة من الأكاديميين والمختصين في علم المعلومات والمكتبات
+      </p>
+    </div>
+
+    {% if team_members %}
+    <div class="team-grid">
+      {% for member in team_members %}
+      <div class="team-card" data-aos="fade-up" data-aos-delay="{{ loop.index0 * 80 }}">
+        <div class="team-avatar">
+          {% if member.avatar and member.avatar != 'default.png' %}
+          <img src="{{ url_for('static', filename='images/avatars/' + member.avatar) }}"
+               alt="{{ member.full_name }}"
+               style="width:80px;height:80px;border-radius:50%;object-fit:cover;">
+          {% else %}
+          {{ member.first_name[0] }}{{ member.last_name[0] }}
+          {% endif %}
+        </div>
+        <div class="team-name">{{ member.full_name }}</div>
+        <div class="team-role">{{ member.speciality or 'أستاذ' }}</div>
+        {% if member.bio %}
+        <p class="team-bio">{{ member.bio|truncate(90) }}</p>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+
+    {% else %}
+    {# عرض افتراضي إذا لم تُمرَّر team_members من الـ route #}
+    <div class="team-grid">
+      {% for item in [
+        {'initials':'أ م', 'name':'فريق الإدارة', 'role':'إدارة المنصة', 'bio':'يسهر على تطوير المنصة وضمان جودة تجربة المتدربين'},
+        {'initials':'أ ت', 'name':'فريق التكوين', 'role':'محتوى أكاديمي', 'bio':'أساتذة متخصصون في علم المكتبات والمعلومات والأرشيف'},
+        {'initials':'د ت', 'name':'الدعم التقني', 'role':'تطوير وصيانة', 'bio':'مختصون في تطوير المنصة وضمان استمراريتها التقنية'},
+      ] %}
+      <div class="team-card" data-aos="fade-up" data-aos-delay="{{ loop.index0 * 80 }}">
+        <div class="team-avatar">{{ item.initials }}</div>
+        <div class="team-name">{{ item.name }}</div>
+        <div class="team-role">{{ item.role }}</div>
+        <p class="team-bio">{{ item.bio }}</p>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- ── CTA ── -->
+    <div class="about-cta" data-aos="fade-up">
+      <h3>انضم إلى مجتمع أخصائيي المعلومات</h3>
+      <p>سجّل مجاناً واستفد من برامج التكوين المتخصصة وشهادات الإتمام المعتمدة</p>
+      <div class="d-flex flex-wrap gap-3 justify-content-center">
+        <a href="{{ url_for('auth.register') }}" class="cta-btn">
+          <i class="bi bi-person-plus-fill"></i> سجّل مجاناً
+        </a>
+        <a href="{{ url_for('courses.list') }}"
+           class="cta-btn"
+           style="background:rgba(27,42,82,0.1);color:#1B2A52;border:2px solid #1B2A52;">
+          <i class="bi bi-collection"></i> تصفح التكوينات
+        </a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<style>
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+<script>
+// ── Counter animation ─────────────────────────────────
+function animateCounter(el) {
+  const target = parseInt(el.dataset.target, 10) || 0;
+  const duration = 1600;
+  const step = Math.ceil(target / (duration / 16));
+  let current = 0;
+  const timer = setInterval(() => {
+    current = Math.min(current + step, target);
+    el.textContent = current.toLocaleString('ar-DZ');
+    if (current >= target) clearInterval(timer);
+  }, 16);
+}
+
+// شغّل الـ counters عند ظهور الـ stats-ribbon في الشاشة
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.querySelectorAll('.stat-number[data-target]').forEach(animateCounter);
+      observer.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.3 });
+
+const ribbon = document.querySelector('.stats-ribbon');
+if (ribbon) observer.observe(ribbon);
+</script>
+{% endblock %}

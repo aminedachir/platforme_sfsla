@@ -13,7 +13,24 @@ def index():
 
 @main_bp.route("/about")
 def about():
-    return render_template("main/about.html")
+    from app.models import User, Course, Certificate, Role
+    from sqlalchemy import func
+    
+    # إحصائيات للمنصة
+    stats = {
+        'students': User.query.join(User.roles).filter(Role.name == 'student').count(),
+        'professors': User.query.join(User.roles).filter(Role.name == 'professor').count(),
+        'courses': Course.query.filter_by(is_published=True).count(),
+        'certificates': Certificate.query.count(),
+    }
+    
+    # فريق الأساتذة (اختياري)
+    professor_role = Role.query.filter_by(name='professor').first()
+    team_members = []
+    if professor_role:
+        team_members = User.query.filter(User.roles.any(id=professor_role.id)).limit(6).all()
+    
+    return render_template("main/about.html", stats=stats, team_members=team_members)
 
 @main_bp.route("/contact")
 def contact():
