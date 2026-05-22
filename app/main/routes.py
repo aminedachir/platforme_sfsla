@@ -18,3 +18,23 @@ def about():
 @main_bp.route("/contact")
 def contact():
     return render_template("main/contact.html")
+
+
+@main_bp.route("/verify/<certificate_id>")
+def verify_certificate(certificate_id):
+    """
+    Public verification page — no login required.
+    URL:  /verify/PSFSLA-2024-00001
+    """
+    from app.models import Certificate  
+ 
+    cert = Certificate.query.filter_by(
+        certificate_id=certificate_id
+    ).first()
+ 
+    return render_template(
+        "public/verify_certificate.html",
+        cert=cert,
+        certificate_id=certificate_id,
+    )
+ 

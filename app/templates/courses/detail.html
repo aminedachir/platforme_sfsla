@@ -871,26 +871,72 @@ body.ltr .resource-item:hover { transform: translateX(3px); }
 
             <!-- CTA button -->
             {% if is_enrolled %}
+
+              {# ── Case 1: already completed ───────────────────────── #}
               {% if enrollment and enrollment.status == 'completed' %}
-              <a href="{{ url_for('student.my_certificates') }}"
-                 class="btn-enroll enrolled-btn">
-                <i class="bi bi-award me-1"></i> عرض الشهادة
-              </a>
+                {# Find certificate if it exists #}
+                {% set cert = enrollment.student.certificates.filter_by(course_id=course.id).first() %}
+                {% if cert %}
+                <a href="{{ url_for('student.download_certificate', cert_id=cert.id) }}"
+                   class="btn-enroll enrolled-btn"
+                   style="background:linear-gradient(135deg,#1B2A52,#2A3E80);color:#F0B429;">
+                  <i class="bi bi-download me-1"></i> تحميل الشهادة PDF
+                </a>
+                <a href="{{ url_for('student.my_certificates') }}"
+                   class="btn-enroll enrolled-btn mt-2"
+                   style="font-size:.82rem;padding:.5rem;">
+                  <i class="bi bi-award me-1"></i> عرض جميع شهاداتي
+                </a>
+                {% else %}
+                {# Completed but cert not yet generated — trigger generation #}
+                <form action="{{ url_for('student.complete_course', course_id=course.id) }}" method="post">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}">
+                  <button type="submit" class="btn-enroll"
+                          style="background:linear-gradient(135deg,#16A34A,#15803D);color:#fff;border:none;width:100%;cursor:pointer;">
+                    <i class="bi bi-patch-check-fill me-1"></i> إصدار الشهادة
+                  </button>
+                </form>
+                {% endif %}
+
+              {# ── Case 2: progress = 100% but not yet completed ───── #}
+              {% elif enrollment and enrollment.progress >= 100 %}
+                <form action="{{ url_for('student.complete_course', course_id=course.id) }}" method="post">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}">
+                  <button type="submit" class="btn-enroll"
+                          style="background:linear-gradient(135deg,#F0B429,#C8921A);color:#1B2A52;border:none;width:100%;cursor:pointer;font-weight:800;">
+                    <i class="bi bi-award-fill me-1"></i> إصدار الشهادة 🎓
+                  </button>
+                </form>
+                <div class="mt-2 text-center"
+                     style="font-size:.75rem;color:var(--psf-success);font-weight:700;">
+                  <i class="bi bi-check-circle-fill me-1"></i>
+                  أتممت جميع موارد التكوين!
+                </div>
+
+              {# ── Case 3: still in progress ───────────────────────── #}
               {% else %}
-              <a href="{{ url_for('student.my_courses') }}"
-                 class="btn-enroll enrolled-btn">
-                <i class="bi bi-check-circle-fill me-1"></i> أنت مسجّل في هذا التكوين
-              </a>
+                <a href="{{ url_for('student.my_courses') }}"
+                   class="btn-enroll enrolled-btn">
+                  <i class="bi bi-check-circle-fill me-1"></i> أنت مسجّل في هذا التكوين
+                </a>
+                {% if enrollment %}
+                <div class="mt-2 text-center"
+                     style="font-size:.73rem;color:var(--psf-gray-500);">
+                  أكمل {{ "%.0f"|format(enrollment.progress) }}% من التكوين للحصول على شهادتك
+                </div>
+                {% endif %}
               {% endif %}
 
+            {# ── Not enrolled, logged in ───────────────────────────── #}
             {% elif current_user.is_authenticated %}
               <form action="{{ url_for('student.enroll', course_id=course.id) }}" method="post">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}">
                 <button type="submit" class="btn-enroll primary-enroll">
-                    <i class="bi bi-plus-circle me-1"></i> التسجيل في التكوين
+                  <i class="bi bi-plus-circle me-1"></i> التسجيل في التكوين
                 </button>
-            </form>
+              </form>
 
+            {# ── Not logged in ─────────────────────────────────────── #}
             {% else %}
               <a href="{{ url_for('auth.login') }}" class="btn-enroll login-btn">
                 <i class="bi bi-box-arrow-in-left me-1"></i> سجّل دخولك للتسجيل

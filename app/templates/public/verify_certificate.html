@@ -1,0 +1,327 @@
+{% extends 'base.html' %}
+{% block title %}
+  {% if cert %}التحقق من الشهادة — {{ cert.certificate_id }}{% else %}شهادة غير موجودة{% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ── Page wrapper ─────────────────────────────────────────── */
+.verify-page {
+  min-height: 85vh;
+  background: linear-gradient(160deg, #F2F5FD 0%, #E8EDF8 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+}
+
+/* ── Card ─────────────────────────────────────────────────── */
+.verify-card {
+  background: #fff;
+  border-radius: 24px;
+  box-shadow: 0 20px 60px rgba(27,42,82,.12);
+  max-width: 640px;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* Card header */
+.verify-header {
+  background: linear-gradient(135deg, #1B2A52 0%, #2A3E80 100%);
+  padding: 2rem 2rem 1.5rem;
+  text-align: center;
+  position: relative;
+}
+.verify-header::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M20 0v40M0 20h40'/%3E%3C/g%3E%3C/svg%3E");
+}
+.verify-header > * { position: relative; z-index: 1; }
+
+.verify-org {
+  font-size: .75rem;
+  color: rgba(255,255,255,.55);
+  margin-bottom: .4rem;
+  letter-spacing: .04em;
+}
+.verify-page-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #fff;
+  margin: 0;
+}
+
+/* ── Status badge ─────────────────────────────────────────── */
+.verify-status {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  font-size: .9rem;
+  font-weight: 700;
+  padding: .45rem 1.1rem;
+  border-radius: 50px;
+  margin-top: 1rem;
+}
+.status-valid {
+  background: rgba(22,163,74,.15);
+  color: #16A34A;
+  border: 1.5px solid rgba(22,163,74,.3);
+}
+.status-invalid {
+  background: rgba(220,38,38,.12);
+  color: #DC2626;
+  border: 1.5px solid rgba(220,38,38,.25);
+}
+.status-not-found {
+  background: rgba(107,114,128,.1);
+  color: #6B7280;
+  border: 1.5px solid rgba(107,114,128,.2);
+}
+
+/* ── Body ─────────────────────────────────────────────────── */
+.verify-body {
+  padding: 1.75rem 2rem 2rem;
+}
+
+/* Info rows */
+.info-row {
+  display: flex;
+  align-items: flex-start;
+  gap: .75rem;
+  padding: .85rem 0;
+  border-bottom: 1px solid #F3F4F6;
+}
+.info-row:last-child { border-bottom: none; }
+
+.info-icon {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; flex-shrink: 0;
+}
+.icon-blue   { background:#EFF6FF; color:#2563EB; }
+.icon-green  { background:#F0FDF4; color:#16A34A; }
+.icon-gold   { background:#FFFBEB; color:#D97706; }
+.icon-purple { background:#F5F3FF; color:#7C3AED; }
+.icon-navy   { background:#EEF2FF; color:#1B2A52; }
+
+.info-label {
+  font-size: .72rem;
+  color: #9CA3AF;
+  font-weight: 600;
+  margin-bottom: .1rem;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+.info-value {
+  font-size: .95rem;
+  color: #111827;
+  font-weight: 700;
+  line-height: 1.4;
+}
+.info-value-sub {
+  font-size: .78rem;
+  color: #6B7280;
+  margin-top: .1rem;
+}
+
+/* ── Actions ──────────────────────────────────────────────── */
+.verify-actions {
+  display: flex;
+  gap: .75rem;
+  flex-wrap: wrap;
+  margin-top: 1.5rem;
+}
+.btn-verify-primary {
+  display: inline-flex; align-items: center; gap: .4rem;
+  background: #1B2A52; color: #fff;
+  padding: .6rem 1.2rem; border-radius: 12px;
+  font-weight: 700; font-size: .85rem;
+  text-decoration: none;
+  transition: background .15s, transform .15s;
+  flex: 1; justify-content: center;
+}
+.btn-verify-primary:hover { background: #2A3E80; color: #fff; transform: translateY(-1px); }
+
+.btn-verify-secondary {
+  display: inline-flex; align-items: center; gap: .4rem;
+  background: transparent; color: #1B2A52;
+  border: 1.5px solid #D1D5DB;
+  padding: .58rem 1.1rem; border-radius: 12px;
+  font-weight: 600; font-size: .85rem;
+  text-decoration: none;
+  transition: all .15s;
+  flex: 1; justify-content: center;
+}
+.btn-verify-secondary:hover {
+  border-color: #1B2A52; background: #F8FAFF;
+}
+
+/* ── Not found ────────────────────────────────────────────── */
+.not-found-icon {
+  font-size: 4rem; color: #D1D5DB;
+  display: block; text-align: center;
+  margin-bottom: 1rem;
+}
+
+/* ── Cert ID box ──────────────────────────────────────────── */
+.cert-id-box {
+  background: #F8FAFF;
+  border: 1px dashed #C7D2FE;
+  border-radius: 10px;
+  padding: .6rem 1rem;
+  font-family: monospace;
+  font-size: .9rem;
+  color: #1B2A52;
+  font-weight: 700;
+  text-align: center;
+  letter-spacing: .05em;
+  margin-bottom: 1.5rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="verify-page">
+  <div class="verify-card">
+
+    <!-- Header -->
+    <div class="verify-header">
+      <p class="verify-org">PSFSLA — المنصة الوطنية للتكوين المستمر</p>
+      <h1 class="verify-page-title">🔍 التحقق من الشهادة</h1>
+
+      {% if cert %}
+        {% if cert.is_valid %}
+        <div class="verify-status status-valid">
+          <i class="bi bi-patch-check-fill"></i> شهادة سارية ومعتمدة
+        </div>
+        {% else %}
+        <div class="verify-status status-invalid">
+          <i class="bi bi-x-circle-fill"></i> تم إلغاء هذه الشهادة
+        </div>
+        {% endif %}
+      {% else %}
+      <div class="verify-status status-not-found">
+        <i class="bi bi-question-circle"></i> شهادة غير موجودة
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Body -->
+    <div class="verify-body">
+
+      <!-- Certificate ID being queried -->
+      <div class="cert-id-box">{{ certificate_id }}</div>
+
+      {% if cert %}
+
+        <!-- ── Valid / invalid certificate details ── -->
+        <div class="info-row">
+          <div class="info-icon icon-blue">
+            <i class="bi bi-person-fill"></i>
+          </div>
+          <div>
+            <div class="info-label">اسم المتدرب</div>
+            <div class="info-value">{{ cert.holder.full_name }}</div>
+          </div>
+        </div>
+
+        <div class="info-row">
+          <div class="info-icon icon-gold">
+            <i class="bi bi-book-fill"></i>
+          </div>
+          <div>
+            <div class="info-label">التكوين</div>
+            <div class="info-value">{{ cert.course.title_ar }}</div>
+            {% if cert.course.title_fr %}
+            <div class="info-value-sub">{{ cert.course.title_fr }}</div>
+            {% endif %}
+          </div>
+        </div>
+
+        {% if cert.course.professor %}
+        <div class="info-row">
+          <div class="info-icon icon-purple">
+            <i class="bi bi-person-badge-fill"></i>
+          </div>
+          <div>
+            <div class="info-label">المكوّن</div>
+            <div class="info-value">{{ cert.course.professor.full_name }}</div>
+            {% if cert.course.professor.speciality %}
+            <div class="info-value-sub">{{ cert.course.professor.speciality }}</div>
+            {% endif %}
+          </div>
+        </div>
+        {% endif %}
+
+        <div class="info-row">
+          <div class="info-icon icon-green">
+            <i class="bi bi-calendar-check-fill"></i>
+          </div>
+          <div>
+            <div class="info-label">تاريخ الإصدار</div>
+            <div class="info-value">
+              {{ cert.issued_at.strftime('%d %B %Y') if cert.issued_at else '—' }}
+            </div>
+          </div>
+        </div>
+
+        <div class="info-row">
+          <div class="info-icon icon-navy">
+            <i class="bi bi-shield-lock-fill"></i>
+          </div>
+          <div>
+            <div class="info-label">حالة الشهادة</div>
+            {% if cert.is_valid %}
+            <div class="info-value" style="color:#16A34A;">
+              <i class="bi bi-check-circle-fill me-1"></i>سارية المفعول
+            </div>
+            {% else %}
+            <div class="info-value" style="color:#DC2626;">
+              <i class="bi bi-x-circle-fill me-1"></i>ملغاة
+            </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Actions -->
+        {% if cert.is_valid %}
+        <div class="verify-actions">
+          {# Only show download to the holder (requires login) #}
+          {% if current_user.is_authenticated and current_user.id == cert.student_id %}
+          <a href="{{ url_for('student.download_certificate', cert_id=cert.id) }}"
+             class="btn-verify-primary">
+            <i class="bi bi-download"></i> تحميل شهادتك PDF
+          </a>
+          {% endif %}
+          <a href="{{ url_for('courses.detail', course_id=cert.course_id) }}"
+             class="btn-verify-secondary">
+            <i class="bi bi-arrow-left"></i> صفحة التكوين
+          </a>
+        </div>
+        {% endif %}
+
+      {% else %}
+
+        <!-- ── Certificate not found ── -->
+        <i class="bi bi-file-earmark-x not-found-icon"></i>
+        <h5 class="text-center" style="color:#1B2A52;font-weight:800;margin-bottom:.5rem;">
+          لا توجد شهادة بهذا الرقم
+        </h5>
+        <p class="text-center text-muted" style="font-size:.88rem;">
+          تأكد من صحة رقم الشهادة. إذا كنت تعتقد أن هناك خطأً، تواصل مع الدعم.
+        </p>
+        <div class="verify-actions" style="margin-top:1rem;">
+          <a href="{{ url_for('main.index') }}" class="btn-verify-secondary">
+            <i class="bi bi-house"></i> الصفحة الرئيسية
+          </a>
+        </div>
+
+      {% endif %}
+
+    </div>{# /verify-body #}
+  </div>{# /verify-card #}
+</div>
+{% endblock %}

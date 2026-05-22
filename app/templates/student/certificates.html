@@ -9,9 +9,15 @@
 body { background:#F2F5FD; }
 .dashboard-wrap { margin-right:260px; min-height:100vh; }
 body.ltr .dashboard-wrap { margin-right:0; margin-left:260px; }
-.dash-topbar { background:#fff; border-bottom:1px solid #E5E7EB; padding:.75rem 1.75rem; display:flex; align-items:center; gap:1rem; position:sticky; top:0; z-index:50; box-shadow:0 1px 4px rgba(27,42,82,.06); }
+.dash-topbar {
+  background:#fff; border-bottom:1px solid #E5E7EB;
+  padding:.75rem 1.75rem; display:flex; align-items:center;
+  gap:1rem; position:sticky; top:0; z-index:50;
+  box-shadow:0 1px 4px rgba(27,42,82,.06);
+}
 .page-title { font-size:1.05rem; font-weight:700; color:#1B2A52; margin:0; }
 
+/* ── Certificate card ───────────────────────────────────────── */
 .cert-card {
   background: linear-gradient(135deg, #1B2A52 0%, #2A3E80 100%);
   border-radius: 20px;
@@ -21,70 +27,105 @@ body.ltr .dashboard-wrap { margin-right:0; margin-left:260px; }
   overflow: hidden;
   transition: transform 0.2s, box-shadow 0.2s;
   height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 .cert-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 15px 40px rgba(27,42,82,0.2);
+  box-shadow: 0 15px 40px rgba(27,42,82,0.25);
 }
 .cert-card::before {
   content: '🎓';
   position: absolute;
-  bottom: -20px;
-  left: -20px;
-  font-size: 100px;
-  opacity: 0.1;
+  bottom: -20px; left: -20px;
+  font-size: 100px; opacity: 0.08;
+  pointer-events: none;
 }
+
+/* validity badge */
+.cert-valid-badge {
+  display: inline-flex; align-items: center; gap: .3rem;
+  background: rgba(22,163,74,.18); border: 1px solid rgba(22,163,74,.35);
+  color: #4ade80; font-size: .68rem; font-weight: 700;
+  padding: .2rem .55rem; border-radius: 20px;
+  width: fit-content; margin-bottom: .75rem;
+}
+.cert-valid-badge.invalid {
+  background: rgba(220,38,38,.18); border-color: rgba(220,38,38,.35);
+  color: #f87171;
+}
+
 .cert-id {
-  font-size: 0.7rem;
-  opacity: 0.7;
-  margin-bottom: 0.5rem;
-  font-family: monospace;
+  font-size: 0.68rem; opacity: 0.6;
+  margin-bottom: 0.35rem; font-family: monospace; letter-spacing: .02em;
 }
 .cert-title {
-  font-size: 1.1rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
+  font-size: 1.05rem; font-weight: 700;
+  margin-bottom: 0.4rem; line-height: 1.4;
+  flex: 1;
 }
 .cert-date {
-  font-size: 0.75rem;
-  opacity: 0.6;
-  margin-bottom: 1rem;
+  font-size: 0.73rem; opacity: 0.55; margin-bottom: 0.9rem;
 }
+
 .cert-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 1rem;
+  margin-top: auto;
   padding-top: 0.75rem;
   border-top: 1px solid rgba(255,255,255,0.1);
+  gap: .4rem;
+  flex-wrap: wrap;
 }
+
+/* action buttons */
 .btn-cert {
-  background: #F0B429;
-  color: #1B2A52;
-  border: none;
-  padding: 0.3rem 0.8rem;
-  border-radius: 20px;
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-decoration: none;
-  transition: all 0.2s;
+  display: inline-flex; align-items: center; gap: .3rem;
+  background: #F0B429; color: #1B2A52;
+  border: none; padding: .32rem .75rem;
+  border-radius: 20px; font-size: .7rem; font-weight: 700;
+  text-decoration: none; cursor: pointer;
+  transition: background .15s, transform .15s;
 }
-.btn-cert:hover {
-  background: #F5C842;
-  color: #1B2A52;
+.btn-cert:hover { background: #F5C842; color: #1B2A52; transform: scale(1.04); }
+
+.btn-cert-outline {
+  display: inline-flex; align-items: center; gap: .3rem;
+  background: transparent;
+  color: rgba(255,255,255,.75);
+  border: 1px solid rgba(255,255,255,.25);
+  padding: .3rem .7rem; border-radius: 20px;
+  font-size: .7rem; font-weight: 600;
+  text-decoration: none; cursor: pointer;
+  transition: all .15s;
 }
+.btn-cert-outline:hover {
+  background: rgba(255,255,255,.1);
+  border-color: rgba(255,255,255,.45);
+  color: #fff;
+}
+
+/* ── Stats bar ──────────────────────────────────────────────── */
+.cert-stats {
+  display: flex; gap: 1rem;
+  background: #fff; border: 1px solid #E5E7EB;
+  border-radius: 14px; padding: 1rem 1.5rem;
+  margin-bottom: 1.5rem;
+}
+.stat-item { text-align: center; }
+.stat-num  { font-size: 1.5rem; font-weight: 800; color: #1B2A52; line-height: 1; }
+.stat-lbl  { font-size: .72rem; color: #6B7280; margin-top: .2rem; }
+
+/* ── Empty state ────────────────────────────────────────────── */
 .empty-state {
-  text-align: center;
-  padding: 4rem;
-  background: #fff;
-  border-radius: 16px;
+  text-align: center; padding: 4rem;
+  background: #fff; border-radius: 16px;
   border: 1px solid #E5E7EB;
 }
 .empty-state i {
-  font-size: 4rem;
-  color: #D1D5DB;
-  margin-bottom: 1rem;
-  display: block;
+  font-size: 4rem; color: #D1D5DB;
+  margin-bottom: 1rem; display: block;
 }
 </style>
 {% endblock %}
@@ -99,36 +140,84 @@ body.ltr .dashboard-wrap { margin-right:0; margin-left:260px; }
       <i class="bi bi-list fs-5"></i>
     </button>
     <p class="page-title">📜 شهاداتي</p>
+    {% if certificates %}
+    <span class="ms-auto badge"
+          style="background:#1B2A52;color:#F0B429;font-size:.75rem;padding:.35rem .7rem;border-radius:20px;">
+      {{ certificates|length }} شهادة
+    </span>
+    {% endif %}
   </div>
 
   <div style="padding:1.75rem;">
+
     {% if certificates %}
+
+    <!-- Stats bar -->
+    {% set valid_count = certificates|selectattr('is_valid')|list|length %}
+    <div class="cert-stats">
+      <div class="stat-item">
+        <div class="stat-num">{{ certificates|length }}</div>
+        <div class="stat-lbl">إجمالي الشهادات</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num" style="color:#16A34A;">{{ valid_count }}</div>
+        <div class="stat-lbl">شهادات معتمدة</div>
+      </div>
+    </div>
+
+    <!-- Certificate cards -->
     <div class="row g-4">
       {% for cert in certificates %}
       <div class="col-md-6 col-lg-4">
         <div class="cert-card">
+
+          <!-- Validity badge -->
+          {% if cert.is_valid %}
+          <div class="cert-valid-badge">
+            <i class="bi bi-patch-check-fill"></i> شهادة معتمدة
+          </div>
+          {% else %}
+          <div class="cert-valid-badge invalid">
+            <i class="bi bi-x-circle-fill"></i> غير صالحة
+          </div>
+          {% endif %}
+
           <div class="cert-id">{{ cert.certificate_id }}</div>
           <div class="cert-title">{{ cert.course.title_ar }}</div>
-          <div class="cert-date">📅 تاريخ الإصدار: {{ cert.issued_at.strftime('%d/%m/%Y') }}</div>
+          <div class="cert-date">
+            📅 تاريخ الإصدار: {{ cert.issued_at.strftime('%d/%m/%Y') }}
+          </div>
+
           <div class="cert-footer">
-            <span>
-              <i class="bi bi-patch-check-fill"></i>
-              <span style="font-size:0.7rem;">شهادة معتمدة</span>
+            <span style="font-size:.68rem;opacity:.5;">
+              {{ cert.course.title_fr | truncate(28) if cert.course.title_fr }}
             </span>
-            <div>
-              <a href="#" class="btn-cert" onclick="alert('سيتم إضافة تحميل PDF قريباً'); return false;">
-                <i class="bi bi-download me-1"></i>تحميل
+            <div style="display:flex;gap:.4rem;flex-wrap:wrap;">
+              <!-- Verify button -->
+              <a href="{{ url_for('main.verify_certificate', certificate_id=cert.certificate_id) }}"
+                 target="_blank"
+                 class="btn-cert-outline"
+                 title="التحقق من الشهادة">
+                <i class="bi bi-shield-check"></i> تحقق
               </a>
-              <a href="#" class="btn-cert me-1" onclick="alert('صفحة التحقق قيد التطوير'); return false;">
-                <i class="bi bi-shield-check"></i>
+              <!-- Download button (real) -->
+              {% if cert.is_valid %}
+              <a href="{{ url_for('student.download_certificate', cert_id=cert.id) }}"
+                 class="btn-cert"
+                 title="تحميل شهادة PDF">
+                <i class="bi bi-download"></i> تحميل PDF
               </a>
+              {% endif %}
             </div>
           </div>
+
         </div>
       </div>
       {% endfor %}
     </div>
+
     {% else %}
+    <!-- Empty state -->
     <div class="empty-state">
       <i class="bi bi-award"></i>
       <h5 style="color:#1B2A52;">لا توجد شهادات بعد</h5>
@@ -138,6 +227,7 @@ body.ltr .dashboard-wrap { margin-right:0; margin-left:260px; }
       </a>
     </div>
     {% endif %}
+
   </div>
 </div>
 {% endblock %}
@@ -147,7 +237,7 @@ body.ltr .dashboard-wrap { margin-right:0; margin-left:260px; }
 document.getElementById('sidebar-toggle')?.addEventListener('click', () => {
   document.getElementById('psf-sidebar')?.classList.toggle('open');
   const ov = document.getElementById('sidebar-overlay');
-  if(ov) ov.style.display = ov.style.display==='none' ? 'block' : 'none';
+  if (ov) ov.style.display = ov.style.display === 'none' ? 'block' : 'none';
 });
 </script>
 {% endblock %}

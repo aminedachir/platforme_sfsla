@@ -30,6 +30,9 @@ class Config:
     ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "pdf"}
     MAX_CONTENT_LENGTH = int(os.environ.get("MAX_CONTENT_LENGTH", 16 * 1024 * 1024))
 
+    # ── Certificates ──────────────────────────────────────────
+    CERT_FOLDER = os.path.join(BASE_DIR, "app", "static", "certificates")
+
     # ── Mail ──────────────────────────────────────────────────
     MAIL_SERVER = os.environ.get("MAIL_SERVER", "localhost")
     MAIL_PORT = int(os.environ.get("MAIL_PORT", 25))
