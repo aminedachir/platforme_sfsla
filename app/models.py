@@ -73,9 +73,12 @@ class User(UserMixin, db.Model):
 
     # Relationships
     roles       = db.relationship("Role", secondary=user_roles, backref="users", lazy="dynamic")
-    enrollments = db.relationship("Enrollment", backref="student", lazy="dynamic")
-    certificates = db.relationship("Certificate", backref="holder", lazy="dynamic")
-    notifications = db.relationship("Notification", backref="recipient", lazy="dynamic")
+    enrollments   = db.relationship("Enrollment",        backref="student",   lazy="dynamic",
+                                     cascade="all, delete-orphan", passive_deletes=True)
+    certificates  = db.relationship("Certificate",       backref="holder",    lazy="dynamic",
+                                     cascade="all, delete-orphan", passive_deletes=True)
+    notifications = db.relationship("Notification",      backref="recipient", lazy="dynamic",
+                                     cascade="all, delete-orphan", passive_deletes=True)
     courses_taught = db.relationship("Course", backref="professor", lazy="dynamic",
                                      foreign_keys="Course.professor_id")
 
@@ -211,7 +214,7 @@ class Enrollment(db.Model):
     __tablename__ = "enrollments"
 
     id          = db.Column(db.Integer, primary_key=True)
-    student_id  = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    student_id  = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     course_id   = db.Column(db.Integer, db.ForeignKey("courses.id"), nullable=False)
     status      = db.Column(db.String(32), default="active")  # active | completed | suspended
     progress    = db.Column(db.Float, default=0.0)             # 0.0 – 100.0 percent
@@ -263,7 +266,7 @@ class Certificate(db.Model):
 
     id              = db.Column(db.Integer, primary_key=True)
     certificate_id  = db.Column(db.String(64), unique=True, nullable=False)  # e.g. PSFSLA-2024-00001
-    student_id      = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    student_id      = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     course_id       = db.Column(db.Integer, db.ForeignKey("courses.id"), nullable=False)
     issued_at       = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     file_path       = db.Column(db.String(512))    # path to generated PDF
@@ -281,7 +284,7 @@ class Notification(db.Model):
     __tablename__ = "notifications"
 
     id          = db.Column(db.Integer, primary_key=True)
-    user_id     = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    user_id     = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     title       = db.Column(db.String(255), nullable=False)
     message     = db.Column(db.Text)
     type        = db.Column(db.String(32), default="info")  # info | success | warning | danger
@@ -302,7 +305,7 @@ class CompletedResource(db.Model):
     __tablename__ = "completed_resources"
 
     id          = db.Column(db.Integer, primary_key=True)
-    student_id  = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False, index=True)
+    student_id  = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     resource_id = db.Column(db.Integer, db.ForeignKey("resources.id"), nullable=False)
     course_id   = db.Column(db.Integer, db.ForeignKey("courses.id"), nullable=False, index=True)
     completed_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
@@ -330,7 +333,7 @@ class AttendedSession(db.Model):
     __tablename__ = "attended_sessions"
 
     id          = db.Column(db.Integer, primary_key=True)
-    student_id  = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False, index=True)
+    student_id  = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     session_id  = db.Column(db.Integer, db.ForeignKey("live_sessions.id"), nullable=False)
     course_id   = db.Column(db.Integer, db.ForeignKey("courses.id"), nullable=False, index=True)
     attended_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
