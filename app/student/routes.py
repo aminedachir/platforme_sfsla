@@ -93,6 +93,31 @@ def enroll(course_id):
         flash(f"تم التسجيل في «{course.title_ar}» بنجاح!", "success")
     return redirect(url_for("courses.detail", course_id=course_id))
 
+# ─────────────────────────────────────────────────────────────────────────────
+#  Update Progress
+# ─────────────────────────────────────────────────────────────────────────────
+@student_bp.route("/update-progress/<int:course_id>", methods=["POST"])
+@login_required
+def update_progress(course_id):
+    enrollment = Enrollment.query.filter_by(
+        student_id=current_user.id,
+        course_id=course_id,
+    ).first_or_404()
+
+    try:
+        progress = float(request.form.get("progress", 0))
+    except (TypeError, ValueError):
+        progress = 0.0
+
+    progress = max(0.0, min(100.0, progress))
+    enrollment.progress = progress
+
+    # فقط تحديث النسبة — لا تغيير الـ status هنا
+    # الـ status يتغير فقط عبر زر "إصدار الشهادة" في complete_course
+    db.session.commit()
+    flash(f"تم تحديث تقدمك إلى {progress:.0f}%.", "info")
+    return redirect(url_for("courses.detail", course_id=course_id))
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 #  Complete course & issue certificate  (POST /complete/<course_id>)
@@ -100,22 +125,24 @@ def enroll(course_id):
 @student_bp.route("/complete/<int:course_id>", methods=["POST"])
 @login_required
 def complete_course(course_id):
-    """
-    Mark enrollment as completed and automatically issue a certificate.
-    Requires the student's progress to be exactly 100 % (enforced server-side).
-    """
     enrollment = Enrollment.query.filter_by(
         student_id=current_user.id,
         course_id=course_id,
     ).first_or_404()
 
-    if enrollment.status == "completed":
-        flash("لقد أتممت هذا التكوين مسبقاً.", "info")
-        return redirect(url_for("courses.detail", course_id=course_id))
-
     if enrollment.progress < 100.0:
         flash("يجب إكمال جميع موارد التكوين قبل إصدار الشهادة (التقدم 100%).", "warning")
         return redirect(url_for("courses.detail", course_id=course_id))
+
+    # تحقق إذا كانت الشهادة موجودة مسبقاً
+    existing_cert = Certificate.query.filter_by(
+        student_id=current_user.id,
+        course_id=course_id,
+    ).first()
+
+    if existing_cert:
+        flash("لقد حصلت على شهادتك مسبقاً.", "info")
+        return redirect(url_for("student.my_certificates"))
 
     # ── Mark completed ────────────────────────────────────────
     enrollment.status       = "completed"
@@ -124,8 +151,8 @@ def complete_course(course_id):
     # ── Generate certificate ──────────────────────────────────
     from app.utils.certificate import issue_certificate
 
-    base_url  = request.host_url.rstrip("/")
-    save_dir  = current_app.config.get(
+    base_url = request.host_url.rstrip("/")
+    save_dir = current_app.config.get(
         "CERT_FOLDER",
         os.path.join(current_app.static_folder, "certificates"),
     )

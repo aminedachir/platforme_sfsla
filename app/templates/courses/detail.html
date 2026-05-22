@@ -856,10 +856,11 @@ body.ltr .resource-item:hover { transform: translateX(3px); }
             <div class="progress-section">
               <div class="progress-label">
                 <span>التقدم</span>
-                <span>{{ "%.0f"|format(enrollment.progress) }}%</span>
+                <span id="progress-display">{{ "%.0f"|format(enrollment.progress) }}%</span>
               </div>
               <div class="psf-progress">
-                <div class="psf-progress-bar" style="width: {{ enrollment.progress }}%"></div>
+                <div class="psf-progress-bar" id="progress-bar-display"
+                    style="width: {{ enrollment.progress }}%"></div>
               </div>
               {% if enrollment.status == 'completed' %}
               <div class="mt-2 text-center" style="font-size:0.78rem;color:var(--psf-success);font-weight:700;">
@@ -867,7 +868,40 @@ body.ltr .resource-item:hover { transform: translateX(3px); }
               </div>
               {% endif %}
             </div>
+
+            {# ── Update Progress Form (for active enrollments only) ── #}
+            {% if enrollment.status != 'completed' %}
+            <form action="{{ url_for('student.update_progress', course_id=course.id) }}"
+                  method="post" class="mt-3">
+              <input type="hidden" name="csrf_token"
+                    value="{{ csrf_token() if csrf_token is defined else '' }}">
+
+              <label for="progressRange"
+                    style="font-size:0.8rem;font-weight:700;color:var(--psf-navy-700);
+                            display:flex;justify-content:space-between;margin-bottom:0.4rem;">
+                <span><i class="bi bi-sliders me-1"></i> تحديث التقدم</span>
+                <span id="rangeValue" style="color:var(--color-primary);">
+                  {{ "%.0f"|format(enrollment.progress) }}%
+                </span>
+              </label>
+
+              <input type="range" id="progressRange" name="progress"
+                    min="0" max="100" step="1"
+                    value="{{ enrollment.progress | int }}"
+                    class="form-range mb-2"
+                    style="width:100%;accent-color:var(--color-primary);">
+
+              <button type="submit"
+                      style="width:100%;padding:0.5rem;font-size:0.83rem;font-weight:700;
+                            border:none;border-radius:var(--radius-md);cursor:pointer;
+                            background:linear-gradient(135deg,var(--psf-navy-700),var(--psf-navy-900));
+                            color:#fff;transition:var(--transition);">
+                <i class="bi bi-arrow-repeat me-1"></i> تحديث التقدم
+              </button>
+            </form>
             {% endif %}
+
+            {% endif %}{# /is_enrolled #}
 
             <!-- CTA button -->
             {% if is_enrolled %}
@@ -913,16 +947,18 @@ body.ltr .resource-item:hover { transform: translateX(3px); }
                   أتممت جميع موارد التكوين!
                 </div>
 
-              {# ── Case 3: still in progress ───────────────────────── #}
+              {# ── Case 3: still in progress ───────────────────────────── #}
               {% else %}
                 <a href="{{ url_for('student.my_courses') }}"
-                   class="btn-enroll enrolled-btn">
+                  class="btn-enroll enrolled-btn">
                   <i class="bi bi-check-circle-fill me-1"></i> أنت مسجّل في هذا التكوين
                 </a>
                 {% if enrollment %}
-                <div class="mt-2 text-center"
-                     style="font-size:.73rem;color:var(--psf-gray-500);">
-                  أكمل {{ "%.0f"|format(enrollment.progress) }}% من التكوين للحصول على شهادتك
+                <div class="mt-3 p-2 rounded-2 text-center"
+                    style="background:var(--psf-navy-50);border:1px solid var(--psf-navy-100);
+                            font-size:.75rem;color:var(--psf-navy-700);">
+                  <i class="bi bi-info-circle me-1"></i>
+                  اضبط شريط التقدم إلى <strong>100%</strong> لإصدار شهادتك
                 </div>
                 {% endif %}
               {% endif %}
@@ -1038,5 +1074,15 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => { bar.style.width = w; }, 300);
   }
 });
+
+// ── Progress range live update ─────────────────────────   ← أضفه هنا
+const rangeInput = document.getElementById('progressRange');
+const rangeValue = document.getElementById('rangeValue');
+if (rangeInput && rangeValue) {
+  rangeInput.addEventListener('input', () => {
+    rangeValue.textContent = rangeInput.value + '%';
+  });
+}
+
 </script>
 {% endblock %}
