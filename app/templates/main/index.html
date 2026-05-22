@@ -184,7 +184,7 @@
       <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="{{ loop.index0 * 100 }}">
         <div class="psf-card course-card h-100">
           <div class="position-relative">
-            <img src="{{ url_for('static', filename='images/uploads/' + course.thumbnail) }}"
+            <img src="{{ url_for('static', filename='images/uploads/thumbnails/' + course.thumbnail) }}"
                  class="card-img-top"
                  onerror="this.src='https://placehold.co/400x200/E6EBF9/1B2A52?text={{ course.title_ar[:20] }}'"
                  alt="{{ course.title_ar }}"/>
