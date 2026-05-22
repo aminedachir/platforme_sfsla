@@ -184,12 +184,13 @@
                     </ul>
                   </div>
 
-                  {# Delete #}
-                  <button type="button" class="btn btn-sm"
+                  {# Delete — FIX: use data attributes to avoid JS quote-escaping bugs #}
+                  <button type="button" class="btn btn-sm btn-delete-user"
                           style="background:var(--psf-danger-bg);color:var(--psf-danger);
                                  border:none;padding:0.25rem 0.6rem;border-radius:var(--radius-sm);
                                  font-size:0.75rem;"
-                          onclick="confirmDelete({{ u.id }}, '{{ u.full_name }}')"
+                          data-user-id="{{ u.id }}"
+                          data-user-name="{{ u.full_name | e }}"
                           title="حذف">
                     <i class="bi bi-trash3-fill"></i>
                   </button>
@@ -249,7 +250,7 @@
   </div><!-- /psf-dash-content -->
 </div>
 
-{# Hidden delete form #}
+{# Hidden delete form — action set dynamically via JS #}
 <form method="POST" id="deleteUserForm" style="display:none;">
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 </form>
@@ -277,14 +278,37 @@
 
 {% block extra_js %}
 <script>
-function confirmDelete(userId, userName) {
-  document.getElementById('deleteUserName').textContent = userName;
-  document.getElementById('confirmDeleteBtn').onclick = function() {
-    const form = document.getElementById('deleteUserForm');
-    form.action = `/admin/users/${userId}/delete`;
-    form.submit();
-  };
-  new bootstrap.Modal(document.getElementById('confirmDeleteModal')).show();
-}
+// FIX: Use event delegation + data attributes instead of inline onclick
+// This avoids JS syntax errors caused by special characters (apostrophes, quotes) in names.
+document.addEventListener('DOMContentLoaded', function () {
+
+  var modal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
+  var confirmBtn = document.getElementById('confirmDeleteBtn');
+  var form = document.getElementById('deleteUserForm');
+
+  document.querySelectorAll('.btn-delete-user').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var userId   = this.dataset.userId;
+      var userName = this.dataset.userName;
+
+      document.getElementById('deleteUserName').textContent = userName;
+
+      // Set the form action and wire up the confirm button
+      form.action = '/admin/users/' + userId + '/delete';
+
+      // Remove any previous listener to avoid stacking
+      var newBtn = confirmBtn.cloneNode(true);
+      confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
+      confirmBtn = document.getElementById('confirmDeleteBtn'); // re-select
+
+      confirmBtn.addEventListener('click', function () {
+        form.submit();
+      });
+
+      modal.show();
+    });
+  });
+
+});
 </script>
 {% endblock %}

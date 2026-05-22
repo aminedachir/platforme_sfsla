@@ -137,12 +137,13 @@
                     </button>
                   </form>
 
-                  {# Delete #}
-                  <button type="button" class="btn btn-sm"
+                  {# Delete — FIX: use data attributes to avoid JS quote-escaping bugs #}
+                  <button type="button" class="btn btn-sm btn-delete-course"
                           style="background:var(--psf-danger-bg);color:var(--psf-danger);
                                  border:none;padding:0.25rem 0.65rem;border-radius:var(--radius-sm);
                                  font-size:0.75rem;"
-                          onclick="confirmCourseDelete({{ course.id }}, '{{ course.title_fr|replace("'","\\'")|e }}')"
+                          data-course-id="{{ course.id }}"
+                          data-course-title="{{ course.title_fr | e }}"
                           title="حذف">
                     <i class="bi bi-trash3-fill"></i>
                   </button>
@@ -203,6 +204,7 @@
   </div>
 </div>
 
+{# Hidden delete form — action set dynamically via JS #}
 <form method="POST" id="deleteCourseForm" style="display:none;">
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 </form>
@@ -229,14 +231,37 @@
 
 {% block extra_js %}
 <script>
-function confirmCourseDelete(courseId, courseTitle) {
-  document.getElementById('deleteCourseTitle').textContent = courseTitle;
-  document.getElementById('confirmCourseDeleteBtn').onclick = function() {
-    const form = document.getElementById('deleteCourseForm');
-    form.action = `/admin/courses/${courseId}/delete`;
-    form.submit();
-  };
-  new bootstrap.Modal(document.getElementById('confirmCourseDeleteModal')).show();
-}
+// FIX: Use event delegation + data attributes instead of inline onclick
+// This avoids JS syntax errors caused by special characters (apostrophes, quotes) in titles.
+document.addEventListener('DOMContentLoaded', function () {
+
+  var modal = new bootstrap.Modal(document.getElementById('confirmCourseDeleteModal'));
+  var confirmBtn = document.getElementById('confirmCourseDeleteBtn');
+  var form = document.getElementById('deleteCourseForm');
+
+  document.querySelectorAll('.btn-delete-course').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var courseId    = this.dataset.courseId;
+      var courseTitle = this.dataset.courseTitle;
+
+      document.getElementById('deleteCourseTitle').textContent = courseTitle;
+
+      // Set the form action
+      form.action = '/admin/courses/' + courseId + '/delete';
+
+      // Replace confirmBtn to remove any stacked listeners
+      var newBtn = confirmBtn.cloneNode(true);
+      confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
+      confirmBtn = document.getElementById('confirmCourseDeleteBtn'); // re-select
+
+      confirmBtn.addEventListener('click', function () {
+        form.submit();
+      });
+
+      modal.show();
+    });
+  });
+
+});
 </script>
 {% endblock %}

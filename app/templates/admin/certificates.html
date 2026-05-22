@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+{% from 'macros/sidebar.html' import sidebar %}
+
+{% block title %}إدارة الشهادات{% endblock %}
+{% block navbar %}{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block content %}
+{{ sidebar(role='admin', user=current_user) }}
+
+<div class="psf-dashboard">
+
+  <div class="psf-dash-topbar">
+    <div class="d-flex align-items-center gap-2">
+      <button class="btn btn-sm d-md-none"
+              onclick="document.getElementById('psf-sidebar').classList.toggle('open');
+                       document.getElementById('sidebar-overlay').style.display='block';">
+        <i class="bi bi-list fs-5"></i>
+      </button>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0 small">
+          <li class="breadcrumb-item">
+            <a href="{{ url_for('admin.dashboard') }}">لوحة التحكم</a>
+          </li>
+          <li class="breadcrumb-item active">الشهادات</li>
+        </ol>
+      </nav>
+    </div>
+  </div>
+
+  <div class="psf-dash-content">
+
+    <!-- Stats row -->
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-md-3">
+        <div class="psf-card p-3 text-center">
+          <div style="font-size:1.6rem;font-weight:700;color:var(--psf-navy-700);">
+            {{ certs.total }}
+          </div>
+          <div style="font-size:0.78rem;color:var(--color-text-muted);">إجمالي الشهادات</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="psf-card p-3 text-center">
+          <div style="font-size:1.6rem;font-weight:700;color:var(--psf-success);">
+            {{ certs.items | selectattr('is_valid') | list | length }}
+          </div>
+          <div style="font-size:0.78rem;color:var(--color-text-muted);">شهادات سارية</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="psf-card p-3 text-center">
+          <div style="font-size:1.6rem;font-weight:700;color:var(--psf-danger);">
+            {{ certs.items | rejectattr('is_valid') | list | length }}
+          </div>
+          <div style="font-size:0.78rem;color:var(--color-text-muted);">شهادات ملغاة (هذه الصفحة)</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="psf-card p-3 text-center">
+          <div style="font-size:1.6rem;font-weight:700;color:var(--psf-accent);">
+            {{ certs.pages }}
+          </div>
+          <div style="font-size:0.78rem;color:var(--color-text-muted);">عدد الصفحات</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="psf-card">
+      <div class="d-flex align-items-center justify-content-between p-3 border-bottom">
+        <h6 class="mb-0 fw-bold">
+          الشهادات
+          <span class="badge-psf badge-muted ms-2">{{ certs.total }}</span>
+        </h6>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table psf-table mb-0">
+          <thead>
+            <tr>
+              <th>رقم الشهادة</th>
+              <th>الطالب</th>
+              <th>التكوين</th>
+              <th>تاريخ الإصدار</th>
+              <th>الحالة</th>
+              <th>الإجراءات</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for cert in certs.items %}
+            <tr>
+              <td>
+                <span style="font-family:monospace;font-size:0.8rem;
+                             background:var(--psf-navy-100);color:var(--psf-navy-700);
+                             padding:0.15rem 0.5rem;border-radius:var(--radius-sm);">
+                  {{ cert.certificate_id }}
+                </span>
+              </td>
+              <td>
+                <div class="d-flex align-items-center gap-2">
+                  <img src="https://ui-avatars.com/api/?name={{ cert.user.full_name|urlencode }}&background=3250A0&color=fff&size=32"
+                       style="width:32px;height:32px;border-radius:50%;" alt=""/>
+                  <div>
+                    <div style="font-size:0.85rem;font-weight:600;">{{ cert.user.full_name }}</div>
+                    <div style="font-size:0.72rem;color:var(--color-text-muted);">{{ cert.user.email }}</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div style="font-size:0.85rem;font-weight:600;">{{ cert.course.title_ar }}</div>
+                <div style="font-size:0.72rem;color:var(--color-text-muted);">{{ cert.course.title_fr }}</div>
+              </td>
+              <td style="font-size:0.82rem;color:var(--color-text-muted);">
+                {{ cert.issued_at.strftime('%Y/%m/%d') if cert.issued_at else '—' }}
+              </td>
+              <td>
+                {% if cert.is_valid %}
+                <span class="badge-psf badge-success">سارية</span>
+                {% else %}
+                <span class="badge-psf badge-danger">ملغاة</span>
+                {% endif %}
+              </td>
+              <td>
+                <form method="POST"
+                      action="{{ url_for('admin.revoke_certificate', cert_id=cert.id) }}"
+                      style="display:inline;">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button type="submit" class="btn btn-sm"
+                          style="background:{% if cert.is_valid %}var(--psf-danger-bg){% else %}var(--psf-success-bg){% endif %};
+                                 color:{% if cert.is_valid %}var(--psf-danger){% else %}var(--psf-success){% endif %};
+                                 border:none;padding:0.25rem 0.65rem;border-radius:var(--radius-sm);
+                                 font-size:0.75rem;"
+                          title="{% if cert.is_valid %}إلغاء الشهادة{% else %}إعادة تفعيل{% endif %}">
+                    <i class="bi bi-{% if cert.is_valid %}shield-x{% else %}shield-check{% endif %}"></i>
+                    {% if cert.is_valid %}إلغاء{% else %}تفعيل{% endif %}
+                  </button>
+                </form>
+              </td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="6" class="text-center py-5 text-muted">
+                <i class="bi bi-patch-check fs-2 d-block mb-2 opacity-25"></i>
+                لا توجد شهادات بعد.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      {# Pagination #}
+      {% if certs.pages > 1 %}
+      <div class="d-flex justify-content-center py-3">
+        <nav>
+          <ul class="pagination pagination-sm mb-0">
+            {% if certs.has_prev %}
+            <li class="page-item">
+              <a class="page-link" href="{{ url_for('admin.certificates', page=certs.prev_num) }}">
+                <i class="bi bi-chevron-right"></i>
+              </a>
+            </li>
+            {% endif %}
+            {% for p in certs.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+              {% if p %}
+              <li class="page-item {% if p == certs.page %}active{% endif %}">
+                <a class="page-link" href="{{ url_for('admin.certificates', page=p) }}">{{ p }}</a>
+              </li>
+              {% else %}
+              <li class="page-item disabled"><span class="page-link">…</span></li>
+              {% endif %}
+            {% endfor %}
+            {% if certs.has_next %}
+            <li class="page-item">
+              <a class="page-link" href="{{ url_for('admin.certificates', page=certs.next_num) }}">
+                <i class="bi bi-chevron-left"></i>
+              </a>
+            </li>
+            {% endif %}
+          </ul>
+        </nav>
+      </div>
+      {% endif %}
+
+    </div><!-- /psf-card -->
+  </div><!-- /psf-dash-content -->
+</div>
+{% endblock %}
