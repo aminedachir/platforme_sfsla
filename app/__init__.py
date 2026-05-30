@@ -13,6 +13,7 @@ from flask_wtf.csrf import CSRFProtect
 
 csrf = CSRFProtect()
 
+
 def create_app(config_name: str = None) -> Flask:
     config_name = config_name or os.environ.get("FLASK_ENV", "development")
 
@@ -26,6 +27,10 @@ def create_app(config_name: str = None) -> Flask:
     mail.init_app(app)
     csrf.init_app(app)
 
+    # Init Cloudinary (uses CLOUDINARY_URL or individual env vars)
+    from app.utils.cloudinary_helper import init_cloudinary
+    init_cloudinary(app)
+
     # Register blueprints
     from app.main.routes import main_bp
     from app.auth.routes import auth_bp
@@ -35,22 +40,20 @@ def create_app(config_name: str = None) -> Flask:
     from app.admin.routes import admin_bp
 
     app.register_blueprint(main_bp)
-    app.register_blueprint(auth_bp, url_prefix="/auth")
-    app.register_blueprint(student_bp, url_prefix="/student")
-    app.register_blueprint(professor_bp, url_prefix="/professor")
-    app.register_blueprint(courses_bp, url_prefix="/courses")
-    app.register_blueprint(admin_bp, url_prefix="/admin")
+    app.register_blueprint(auth_bp,       url_prefix="/auth")
+    app.register_blueprint(student_bp,    url_prefix="/student")
+    app.register_blueprint(professor_bp,  url_prefix="/professor")
+    app.register_blueprint(courses_bp,    url_prefix="/courses")
+    app.register_blueprint(admin_bp,      url_prefix="/admin")
 
-    # Ensure upload folder exists
+    # Ensure local upload folder exists (used as temp buffer before Cloudinary)
     os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
-    # ========== 🔧 التصحيح هنا ==========
     @app.context_processor
-    def inject_current_user():
-        """Make current_user available in all templates"""
-        lang = "ar"  
-        return dict(current_user=current_user,lang=lang)
-    # ===================================
+    def inject_globals():
+        """Make current_user and lang available in all templates."""
+        lang = "ar"
+        return dict(current_user=current_user, lang=lang)
 
     # Register error handlers
     _register_error_handlers(app)

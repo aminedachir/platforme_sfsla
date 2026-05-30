@@ -2,6 +2,7 @@
 app/professor/routes.py
 -----------------------
 Professor dashboard routes for PSFSLA.
+File uploads are handled via Cloudinary (replace_image / upload_image).
 """
 
 from flask import Blueprint, render_template, redirect, url_for, flash, abort, request, current_app
@@ -9,14 +10,17 @@ from flask_login import login_required, current_user
 from app.extensions import db
 from app.models import Course, Resource, LiveSession, Enrollment, User
 from app.professor.forms import CourseForm, ResourceForm, LiveSessionForm
+from app.utils.cloudinary_helper import upload_image, delete_image, replace_image
 from functools import wraps
-import os
-from werkzeug.utils import secure_filename
 from datetime import datetime, timezone
 from werkzeug.datastructures import FileStorage
 
 professor_bp = Blueprint("professor", __name__, url_prefix="/professor")
 
+
+# ──────────────────────────────────────────────────────────────
+#  Access guard
+# ──────────────────────────────────────────────────────────────
 
 def professor_required(f):
     @wraps(f)
@@ -30,6 +34,42 @@ def professor_required(f):
 
 
 # ──────────────────────────────────────────────────────────────
+#  Helper: extract public_id from a stored Cloudinary URL
+# ──────────────────────────────────────────────────────────────
+
+def _extract_public_id(url_or_pid: str) -> str | None:
+    """
+    If the DB stores a full Cloudinary URL we need to extract the public_id
+    before calling delete_image().
+
+    Cloudinary URL pattern:
+        https://res.cloudinary.com/<cloud>/image/upload/v<ver>/<public_id>.<ext>
+
+    If the value looks like a plain public_id already, return it as-is.
+    Returns None for non-Cloudinary URLs or empty strings.
+    """
+    if not url_or_pid:
+        return None
+    if "res.cloudinary.com" in url_or_pid:
+        # Strip query params, then split off extension
+        path = url_or_pid.split("?")[0]
+        # Find the segment after /upload/v<digits>/
+        try:
+            after_upload = path.split("/upload/")[1]
+            # Remove version segment if present (v1234567/)
+            parts = after_upload.split("/", 1)
+            if parts[0].startswith("v") and parts[0][1:].isdigit():
+                after_upload = parts[1] if len(parts) > 1 else after_upload
+            # Remove file extension
+            public_id = after_upload.rsplit(".", 1)[0]
+            return public_id
+        except (IndexError, ValueError):
+            return None
+    # Plain public_id stored directly
+    return url_or_pid if not url_or_pid.startswith("http") else None
+
+
+# ──────────────────────────────────────────────────────────────
 #  Dashboard
 # ──────────────────────────────────────────────────────────────
 
@@ -38,18 +78,17 @@ def professor_required(f):
 @login_required
 @professor_required
 def dashboard():
-    courses = current_user.courses_taught.all()
+    courses    = current_user.courses_taught.all()
     course_ids = [c.id for c in courses]
 
-    total_courses = len(courses)
-    total_students = (
+    total_courses   = len(courses)
+    total_students  = (
         db.session.query(Enrollment.student_id)
         .filter(Enrollment.course_id.in_(course_ids))
-        .distinct()
-        .count()
+        .distinct().count()
         if course_ids else 0
     )
-    total_sessions = (
+    total_sessions  = (
         LiveSession.query.filter(LiveSession.course_id.in_(course_ids)).count()
         if course_ids else 0
     )
@@ -58,8 +97,7 @@ def dashboard():
     recent_courses = (
         current_user.courses_taught
         .order_by(Course.created_at.desc())
-        .limit(5)
-        .all()
+        .limit(5).all()
     )
 
     upcoming_sessions = (
@@ -67,18 +105,17 @@ def dashboard():
         .filter(
             LiveSession.course_id.in_(course_ids),
             LiveSession.scheduled_at >= datetime.now(timezone.utc),
-            LiveSession.status == "scheduled"
+            LiveSession.status == "scheduled",
         )
         .order_by(LiveSession.scheduled_at)
-        .limit(5)
-        .all()
+        .limit(5).all()
         if course_ids else []
     )
 
     stats = {
-        "total_courses": total_courses,
-        "total_students": total_students,
-        "total_sessions": total_sessions,
+        "total_courses":    total_courses,
+        "total_students":   total_students,
+        "total_sessions":   total_sessions,
         "published_courses": published_courses,
     }
 
@@ -111,56 +148,44 @@ def my_courses():
 #  Create Course
 # ──────────────────────────────────────────────────────────────
 
-def save_uploaded_file(file, subfolder="thumbnails"):
-    """Helper function to save uploaded files"""
-    if not file or not file.filename:
-        return None
-    filename = secure_filename(file.filename)
-    # Create unique filename with timestamp
-    name, ext = os.path.splitext(filename)
-    filename = f"{int(datetime.now().timestamp())}_{name}{ext}"
-    upload_path = os.path.join(current_app.config['UPLOAD_FOLDER'], subfolder, filename)
-    os.makedirs(os.path.dirname(upload_path), exist_ok=True)
-    file.save(upload_path)
-    return filename
-
-
 @professor_bp.route("/courses/create", methods=["GET", "POST"])
 @login_required
 @professor_required
 def create_course():
     form = CourseForm()
-    
+
     from app.models import Category
-    form.category_id.choices = [(0, "--- اختر تصنيفاً ---")] + [(c.id, c.name_ar) for c in Category.query.order_by(Category.name_ar).all()]
-    
+    form.category_id.choices = (
+        [(0, "--- اختر تصنيفاً ---")]
+        + [(c.id, c.name_ar) for c in Category.query.order_by(Category.name_ar).all()]
+    )
+
     if form.validate_on_submit():
-        from werkzeug.datastructures import FileStorage
-        
         course = Course(
             title_ar=form.title_ar.data,
             title_fr=form.title_fr.data,
             description=form.description.data,
             level=form.level.data,
             duration_hours=form.duration_hours.data,
-            category_id=form.category_id.data if form.category_id.data and form.category_id.data != 0 else None,
+            category_id=(form.category_id.data if form.category_id.data != 0 else None),
             is_published=form.is_published.data,
             is_free=form.is_free.data,
-            price=form.price.data if not form.is_free.data else 0,
+            price=(form.price.data if not form.is_free.data else 0),
             professor_id=current_user.id,
         )
-        
-        if form.thumbnail.data and isinstance(form.thumbnail.data, FileStorage):
-            if form.thumbnail.data.filename:
-                thumbnail = save_uploaded_file(form.thumbnail.data, "thumbnails")
-                if thumbnail:
-                    course.thumbnail = thumbnail
+
+        # ── Cloudinary upload ─────────────────────────────────
+        file = form.thumbnail.data
+        if file and isinstance(file, FileStorage) and file.filename:
+            result = upload_image(file, folder="thumbnails")
+            if result:
+                course.thumbnail = result["secure_url"]
 
         db.session.add(course)
         db.session.commit()
         flash("✅ تم إنشاء التكوين بنجاح!", "success")
         return redirect(url_for("professor.my_courses"))
-    
+
     return render_template("professor/course_form.html", form=form, mode="create", course=None)
 
 
@@ -178,33 +203,32 @@ def edit_course(course_id):
         abort(403)
 
     form = CourseForm(obj=course)
-    
-    from app.models import Category
-    form.category_id.choices = [(0, "--- اختر تصنيفاً ---")] + [(c.id, c.name_ar) for c in Category.query.order_by(Category.name_ar).all()]
-    form.category_id.data = course.category_id or 0
-    
-    if form.validate_on_submit():
-        from werkzeug.datastructures import FileStorage
-        
-        course.title_ar = form.title_ar.data
-        course.title_fr = form.title_fr.data
-        course.description = form.description.data
-        course.level = form.level.data
-        course.duration_hours = form.duration_hours.data
-        course.category_id = form.category_id.data if form.category_id.data and form.category_id.data != 0 else None
-        course.is_published = form.is_published.data
-        course.is_free = form.is_free.data
-        if not form.is_free.data:
-            course.price = form.price.data
-        else:
-            course.price = 0
 
-        # ✅ التحقق الصحيح من الملف
-        if form.thumbnail.data and isinstance(form.thumbnail.data, FileStorage):
-            if form.thumbnail.data.filename:
-                thumbnail = save_uploaded_file(form.thumbnail.data, "thumbnails")
-                if thumbnail:
-                    course.thumbnail = thumbnail
+    from app.models import Category
+    form.category_id.choices = (
+        [(0, "--- اختر تصنيفاً ---")]
+        + [(c.id, c.name_ar) for c in Category.query.order_by(Category.name_ar).all()]
+    )
+    form.category_id.data = course.category_id or 0
+
+    if form.validate_on_submit():
+        course.title_ar       = form.title_ar.data
+        course.title_fr       = form.title_fr.data
+        course.description    = form.description.data
+        course.level          = form.level.data
+        course.duration_hours = form.duration_hours.data
+        course.category_id    = form.category_id.data if form.category_id.data != 0 else None
+        course.is_published   = form.is_published.data
+        course.is_free        = form.is_free.data
+        course.price          = 0 if form.is_free.data else form.price.data
+
+        # ── Cloudinary upload (replace old thumbnail) ─────────
+        file = form.thumbnail.data
+        if file and isinstance(file, FileStorage) and file.filename:
+            old_pid = _extract_public_id(course.thumbnail)
+            result  = replace_image(file, old_public_id=old_pid, folder="thumbnails")
+            if result:
+                course.thumbnail = result["secure_url"]
 
         db.session.commit()
         flash("✅ تم تحديث التكوين بنجاح!", "success")
@@ -225,6 +249,11 @@ def delete_course(course_id):
 
     if course.professor_id != current_user.id and not current_user.is_admin:
         abort(403)
+
+    # Delete Cloudinary thumbnail (best-effort)
+    old_pid = _extract_public_id(course.thumbnail)
+    if old_pid:
+        delete_image(old_pid)
 
     db.session.delete(course)
     db.session.commit()
@@ -247,24 +276,22 @@ def manage_resources(course_id):
 
     form = ResourceForm()
     if form.validate_on_submit():
-        from werkzeug.datastructures import FileStorage
-        
         resource = Resource(
             title=form.title.data,
             type=form.type.data,
-            url=form.url.data if form.type.data != 'pdf' else None,
+            url=(form.url.data if form.type.data != "pdf" else None),
             description=form.description.data,
             is_public=form.is_public.data,
             order=form.order.data or 0,
             course_id=course.id,
         )
-        
-        # ✅ التحقق الصحيح من الملف
-        if form.file.data and isinstance(form.file.data, FileStorage):
-            if form.file.data.filename:
-                filename = save_uploaded_file(form.file.data, "resources")
-                if filename:
-                    resource.file_path = filename
+
+        # ── Cloudinary upload for files ───────────────────────
+        file = form.file.data
+        if file and isinstance(file, FileStorage) and file.filename:
+            result = upload_image(file, folder="resources")
+            if result:
+                resource.file_path = result["secure_url"]
 
         db.session.add(resource)
         db.session.commit()
@@ -285,10 +312,16 @@ def manage_resources(course_id):
 @professor_required
 def delete_resource(resource_id):
     resource = Resource.query.get_or_404(resource_id)
-    course = resource.course
+    course   = resource.course
 
     if course.professor_id != current_user.id and not current_user.is_admin:
         abort(403)
+
+    # Delete Cloudinary asset (best-effort)
+    old_pid = _extract_public_id(resource.file_path)
+    if old_pid:
+        resource_type = "raw" if resource.type == "pdf" else "image"
+        delete_image(old_pid, resource_type=resource_type)
 
     db.session.delete(resource)
     db.session.commit()
@@ -307,7 +340,7 @@ def list_live_sessions(course_id):
     course = Course.query.get_or_404(course_id)
     if course.professor_id != current_user.id and not current_user.is_admin:
         abort(403)
-    
+
     sessions = course.live_sessions.order_by(LiveSession.scheduled_at.desc()).all()
     return render_template("professor/live_sessions.html", course=course, sessions=sessions)
 
@@ -346,13 +379,13 @@ def add_live_session(course_id):
 @login_required
 @professor_required
 def delete_live_session(session_id):
-    session = LiveSession.query.get_or_404(session_id)
+    session   = LiveSession.query.get_or_404(session_id)
     course_id = session.course_id
-    course = session.course
-    
+    course    = session.course
+
     if course.professor_id != current_user.id and not current_user.is_admin:
         abort(403)
-    
+
     db.session.delete(session)
     db.session.commit()
     flash("🗑️ تم حذف الجلسة.", "success")
@@ -368,17 +401,16 @@ def delete_live_session(session_id):
 @professor_required
 def students():
     course_ids = [c.id for c in current_user.courses_taught.all()]
-    
-    # Get all enrollments with student and course info
+
     enrollments = []
     if course_ids:
         enrollments = (
             db.session.query(Enrollment, User, Course)
-            .join(User, Enrollment.student_id == User.id)
-            .join(Course, Enrollment.course_id == Course.id)
+            .join(User,   Enrollment.student_id == User.id)
+            .join(Course, Enrollment.course_id  == Course.id)
             .filter(Enrollment.course_id.in_(course_ids))
             .order_by(Enrollment.enrolled_at.desc())
             .all()
         )
-    
+
     return render_template("professor/students.html", enrollments=enrollments)

@@ -1,3 +1,4 @@
+# ── Core framework ────────────────────────────────────────────
 Flask==3.0.3
 Flask-SQLAlchemy==3.1.1
 Flask-Login==0.6.3
@@ -7,11 +8,25 @@ Flask-WTF==1.2.1
 WTForms==3.1.2
 Werkzeug==3.0.3
 SQLAlchemy==2.0.31
+
+# ── Database ──────────────────────────────────────────────────
+psycopg2-binary==2.9.9          # PostgreSQL adapter (Neon)
+dj-database-url==2.2.0          # Parses DATABASE_URL (postgres:// → postgresql://)
+
+# ── Cloud storage ─────────────────────────────────────────────
+cloudinary==1.40.0              # Cloudinary SDK (images & files)
+
+# ── Media & documents ─────────────────────────────────────────
 Pillow==10.4.0
 reportlab==4.2.2
+
+# ── Utilities ─────────────────────────────────────────────────
 python-dotenv==1.0.1
 email-validator==2.2.0
-Flask-Admin==1.6.1
-psycopg2-binary==2.9.9
-gunicorn==22.0.0
 PyJWT==2.9.0
+
+# ── Admin ─────────────────────────────────────────────────────
+Flask-Admin==1.6.1
+
+# ── Production server ─────────────────────────────────────────
+gunicorn==22.0.0
