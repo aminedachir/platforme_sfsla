@@ -24,9 +24,9 @@ class Config:
     # Neon PostgreSQL via DATABASE_URL (with SSL required for Neon)
     _raw_db_url = os.environ.get("DATABASE_URL", f"sqlite:///{os.path.join(BASE_DIR, 'psfsla.db')}")
 
-    # dj-database-url normalises postgresql:// → postgresql+psycopg:// (required by SQLAlchemy 2.x)
+    # dj-database-url normalises postgres:// → postgresql:// (required by SQLAlchemy 2.x)
     if _raw_db_url.startswith("postgresql://"):
-        _raw_db_url = _raw_db_url.replace("postgresql://", "postgresql+psycopg://", 1)
+    _raw_db_url = _raw_db_url.replace("postgresql://", "postgresql+psycopg://", 1)
 
     SQLALCHEMY_DATABASE_URI = _raw_db_url
     SQLALCHEMY_TRACK_MODIFICATIONS = False

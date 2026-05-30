@@ -10,7 +10,7 @@ Werkzeug==3.0.3
 SQLAlchemy==2.0.31
 
 # ── Database ──────────────────────────────────────────────────
-psycopg[binary]==3.2.3          # PostgreSQL adapter (Neon)
+psycopg2-binary==2.9.9          # PostgreSQL adapter (Neon)
 dj-database-url==2.2.0          # Parses DATABASE_URL (postgres:// → postgresql://)
 
 # ── Cloud storage ─────────────────────────────────────────────
