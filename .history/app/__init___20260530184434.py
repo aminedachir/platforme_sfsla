@@ -1,0 +1,111 @@
+"""
+app/__init__.py
+---------------
+Application factory for PSFSLA.
+"""
+
+import os
+from flask import Flask
+from flask_login import current_user
+from config.settings import config
+from app.extensions import db, login_manager, migrate, mail
+from flask_wtf.csrf import CSRFProtect
+
+csrf = CSRFProtect()
+
+
+def create_app(config_name: str = None) -> Flask:
+    config_name = config_name or os.environ.get("FLASK_ENV", "development")
+
+    app = Flask(__name__, template_folder="templates", static_folder="static")
+    app.config.from_object(config[config_name])
+
+    # Init extensions
+    db.init_app(app)
+    login_manager.init_app(app)
+    migrate.init_app(app, db)
+    mail.init_app(app)
+    csrf.init_app(app)
+
+    # Init Cloudinary (uses CLOUDINARY_URL or individual env vars)
+    from app.utils.cloudinary_helper import init_cloudinary
+    init_cloudinary(app)
+
+    # Register blueprints
+    from app.main.routes import main_bp
+    from app.auth.routes import auth_bp
+    from app.student.routes import student_bp
+    from app.professor.routes import professor_bp
+    from app.courses.routes import courses_bp
+    from app.admin.routes import admin_bp
+
+    app.register_blueprint(main_bp)
+    app.register_blueprint(auth_bp,       url_prefix="/auth")
+    app.register_blueprint(student_bp,    url_prefix="/student")
+    app.register_blueprint(professor_bp,  url_prefix="/professor")
+    app.register_blueprint(courses_bp,    url_prefix="/courses")
+    app.register_blueprint(admin_bp,      url_prefix="/admin")
+
+    # Ensure local upload folder exists (used as temp buffer before Cloudinary)
+    os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
+
+    @app.context_processor
+    def inject_globals():
+        """Make current_user and lang available in all templates."""
+        lang = "ar"
+        return dict(current_user=current_user, lang=lang)
+
+    # Register error handlers
+    _register_error_handlers(app)
+
+    # Seed database
+    with app.app_context():
+        db.create_all()
+        _seed_initial_data()
+
+    return app
+
+
+def _register_error_handlers(app: Flask):
+    from flask import render_template
+
+    @app.errorhandler(403)
+    def forbidden(e):
+        return render_template("errors/403.html"), 403
+
+    @app.errorhandler(404)
+    def not_found(e):
+        return render_template("errors/404.html"), 404
+
+    @app.errorhandler(500)
+    def server_error(e):
+        return render_template("errors/500.html"), 500
+
+
+def _seed_initial_data():
+    from app.models import Role, User
+    import os
+
+    # Create roles
+    for role_name in ["admin", "professor", "student"]:
+        if not Role.query.filter_by(name=role_name).first():
+            db.session.add(Role(name=role_name, description=f"Role: {role_name}"))
+    db.session.commit()
+
+    # Create default admin
+    admin_email = os.environ.get("ADMIN_EMAIL", "admin@psfsla.dz")
+    if not User.query.filter_by(email=admin_email).first():
+        admin_role = Role.query.filter_by(name="admin").first()
+        admin = User(
+            first_name="Admin",
+            last_name="PSFSLA",
+            email=admin_email,
+            is_active=True,
+            is_approved=True,
+            email_confirmed=True,
+        )
+        admin.set_password(os.environ.get("ADMIN_PASSWORD", "Admin@123456"))
+        admin.roles.append(admin_role)
+        db.session.add(admin)
+        db.session.commit()
+        print(f"[PSFSLA] Default admin created: {admin_email}")

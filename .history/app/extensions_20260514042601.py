@@ -1,15 +1,21 @@
+"""
+app/extensions.py
+-----------------
+Instantiate Flask extensions here (no app object yet).
+Import and init_app() inside the application factory.
+"""
+
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_migrate import Migrate
 from flask_mail import Mail
 
-# تأكد من تعيين session_options لإغلاق الجلسة تلقائياً
-db = SQLAlchemy(session_options={"autoflush": False, "expire_on_commit": False})
-
+db          = SQLAlchemy()
 login_manager = LoginManager()
-migrate = Migrate()
-mail = Mail()
+migrate     = Migrate()
+mail        = Mail()
 
+# Tell Flask-Login which view handles unauthenticated users
 login_manager.login_view = "auth.login"
 login_manager.login_message = "يرجى تسجيل الدخول للوصول إلى هذه الصفحة"
 login_manager.login_message_category = "warning"
