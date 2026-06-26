@@ -11,7 +11,6 @@ from config.settings import config
 from app.extensions import db, login_manager, migrate, mail
 from flask_wtf.csrf import CSRFProtect
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy import text
 
 csrf = CSRFProtect()
 
